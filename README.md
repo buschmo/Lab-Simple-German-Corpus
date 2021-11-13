@@ -1,6 +1,9 @@
 # Lab-Simple-German
 Repository for the lab module.
 
+## About
+The German language knows two versions of plain language: Einfach Sprache and [Leichte Sprache](https://leichte-sprache.de/), the latter being controlled by the _Netzwerk Leichte Sprache_.
+
 ## Tools/Libraries
 - [spacy.io](https://spacy.io/) python library for natural language processing supporting a plethora of languages, including [german](https://spacy.io/models/de)
 
@@ -29,7 +32,7 @@ Repository for the lab module.
     - https://www.sozialpolitik.com/ (durch Button oben wechseln)
     - https://www.stadt-koeln.de/leben-in-koeln/soziales/informationen-leichter-sprache (einzelne Artikel lassen sich umschalten durch Button oberhalb des Textes)
     - https://www.augsburger-allgemeine.de/special/nachrichten-in-leichter-sprache/ (oft ein Artikel äquivalent in Alltags-Sprache durch Banner mitten im Text)
-    - https://taz.de/Politik/Deutschland/Leichte-Sprache/!p5097/ ()
+    - https://taz.de/Politik/Deutschland/Leichte-Sprache/!p5097/
 
 - Einfache Sprache:
     - https://www.apotheken-umschau.de/einfache-sprache/ (am Ende der Seite führt es zum Artikel in Alltags-Sprache)
