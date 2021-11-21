@@ -42,6 +42,11 @@ The German language knows two versions of plain language: Einfach Sprache and [L
 - Einfache Sprache/ leichte Sprache
     - https://www.unsere-zeitung.at/category/nachrichten/topeasy/
 
+### Potential Sources
+- German learning platforms. Here we might be able to match course content from different speaking levels, i.e. A1 with C1.
+    - [BBC](https://www.bbc.co.uk/languages/german/)
+    - [Deutsche Welle](https://www.dw.com/en/learn-german/s-2469)
+
 ## Difficulties
 
 ### English and German
