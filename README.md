@@ -33,6 +33,7 @@ The German language knows two versions of plain language: Einfach Sprache and [L
     - https://www.stadt-koeln.de/leben-in-koeln/soziales/informationen-leichter-sprache (einzelne Artikel lassen sich umschalten durch Button oberhalb des Textes)
     - https://www.augsburger-allgemeine.de/special/nachrichten-in-leichter-sprache/ (oft ein Artikel äquivalent in Alltags-Sprache durch Banner mitten im Text)
     - https://taz.de/Politik/Deutschland/Leichte-Sprache/!p5097/
+    - https://www.brandeins.de/themen/rubriken/leichte-sprache
 
 - Einfache Sprache:
     - https://www.apotheken-umschau.de/einfache-sprache/ (am Ende der Seite führt es zum Artikel in Alltags-Sprache)
