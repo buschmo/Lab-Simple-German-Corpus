@@ -48,6 +48,8 @@ The German language knows two versions of plain language: Einfach Sprache and [L
     - [Deutsche Welle](https://www.dw.com/en/learn-german/s-2469)
 - Translating english websites
     - [Simple English Wikipedia](https://simple.wikipedia.org/wiki/Main_Page)
+- Possible source for papers
+    - [Dr. Sarah Ebling researchs this topic](https://www.cl.uzh.ch/de/people/team/compling/ebling.html)
 
 ### Further Reading
 - [Paper on stemming german words](https://refubium.fu-berlin.de/bitstream/handle/fub188/18405/tr-b-99-16.pdf;jsessionid=4CCD841DD41B12C997B47D899874D0C1?sequence=1)
