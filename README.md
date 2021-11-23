@@ -1,5 +1,5 @@
-# Lab-Simple-German
-Repository for the lab module.
+# A Simple German corpus
+Repository for the lab module MA-INF 4306 of the university of Bonn.
 
 ## About
 The German language knows two versions of plain language: Einfach Sprache and [Leichte Sprache](https://leichte-sprache.de/), the latter being controlled by the _Netzwerk Leichte Sprache_.
