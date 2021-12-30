@@ -21,10 +21,10 @@ def crawl_article(easy_urls, base_url):
             base_url,
             ["div", {
                 "class": "con cssBoxTeaserStandard conInline"
-                }], 
-            ["Hier können Sie diese Nachricht auch in schwerer Sprache lesen", 
-            "Hier können Sie die Nachrichte auch in schwerer Sprache nachlesen",
-            ])
+            }],
+            ["Hier können Sie diese Nachricht auch in schwerer Sprache lesen",
+             "Hier können Sie die Nachrichte auch in schwerer Sprache nachlesen",
+             ])
         try:
             normal_url = normal_urls[0]
         except IndexError as e:
@@ -47,7 +47,6 @@ def main():
         main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
 
     crawl_article(easy_news_urls, base_url)
-
 
     # crawl archived articles
     archive_urls = [
