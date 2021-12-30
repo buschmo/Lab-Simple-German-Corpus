@@ -37,6 +37,18 @@ def crawl_article(easy_urls, base_url):
                            easy_soup, easy_url, publication_date)
 
 
+def daily():
+    base_url = "https://www.mdr.de/"
+    home_url = "https://www.mdr.de/nachrichten-leicht/index.html"
+
+    # crawl current news articles
+    main_soup = read_soup(home_url)
+    easy_news_urls = get_urls_from_soup(
+        main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
+
+    crawl_article(easy_news_urls, base_url)
+
+
 def main():
     base_url = "https://www.mdr.de/"
     home_url = "https://www.mdr.de/nachrichten-leicht/index.html"
