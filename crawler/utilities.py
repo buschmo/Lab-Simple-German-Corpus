@@ -132,6 +132,18 @@ def get_urls_from_soup(soup, base_url, find_args: list[str, dict], condition="")
     urls = list(set(urls))
     return urls
 
+def filter_urls(urls):
+    """ Removes urls that have already been crawled
+    """
+    foldername, filename = url_to_paths(url[0])
+    header_path = Path(foldername, "header.json")
+    with open(header_path, "r", encoding="utf-8") as f:
+        header=json.load(f)
+    
+    keys = header.keys()
+    urls = [url for url in urls if url not in keys]
+    return urls
+
 
 def log_missing_url(url):
     foldername, _ = url_to_paths(url)
