@@ -1,4 +1,4 @@
-from utilities import *
+import utilities as utl
 import re
 
 """ MDR
@@ -9,14 +9,14 @@ There are three content pages on mdr.de
 """
 
 
-def crawl_article(easy_urls, base_url):
+def crawl_sites(easy_urls, base_url):
     for easy_url in easy_urls:
-        easy_soup = read_soup(easy_url)
+        easy_soup = utl.read_soup(easy_url)
 
         publication_date = str(easy_soup.find(
             "p", {"class": "webtime"}).find_all("span")[1])[6:-9]
 
-        normal_urls = get_urls_from_soup(
+        normal_urls = utl.get_urls_from_soup(
             easy_soup,
             base_url,
             ["div", {
@@ -28,12 +28,12 @@ def crawl_article(easy_urls, base_url):
         try:
             normal_url = normal_urls[0]
         except IndexError as e:
-            log_missing_url(easy_url)
+            utl.log_missing_url(easy_url)
             continue
 
-        normal_soup = read_soup(normal_url)
+        normal_soup = utl.read_soup(normal_url)
 
-        save_parallel_soup(normal_soup, normal_url,
+        utl.save_parallel_soup(normal_soup, normal_url,
                            easy_soup, easy_url, publication_date)
 
 
@@ -42,11 +42,11 @@ def daily():
     home_url = "https://www.mdr.de/nachrichten-leicht/index.html"
 
     # crawl current news articles
-    main_soup = read_soup(home_url)
-    easy_news_urls = get_urls_from_soup(
+    main_soup = utl.read_soup(home_url)
+    easy_news_urls = utl.get_urls_from_soup(
         main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
 
-    crawl_article(easy_news_urls, base_url)
+    crawl_sites(easy_news_urls, base_url)
 
 
 def main():
@@ -54,11 +54,11 @@ def main():
     home_url = "https://www.mdr.de/nachrichten-leicht/index.html"
 
     # crawl current news articles
-    main_soup = read_soup(home_url)
-    easy_news_urls = get_urls_from_soup(
+    main_soup = utl.read_soup(home_url)
+    easy_news_urls = utl.get_urls_from_soup(
         main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
 
-    crawl_article(easy_news_urls, base_url)
+    crawl_sites(easy_news_urls, base_url)
 
     # crawl archived articles
     archive_urls = [
@@ -68,13 +68,13 @@ def main():
     ]
 
     for archive_url in archive_urls:
-        archive_soup = read_soup(archive_url)
+        archive_soup = utl.read_soup(archive_url)
         string = "targetNode-nachrichten-leichte-sprache"
-        easy_information_urls = get_urls_from_soup(
+        easy_information_urls = utl.get_urls_from_soup(
             archive_soup, base_url, ["div", {"class": string}])
 
-        crawl_article(easy_information_urls, base_url)
+        crawl_sites(easy_information_urls, base_url)
 
 
 if __name__ == '__main__':
-    main()
+    daily()
