@@ -36,7 +36,7 @@ def read_soup(url):
     return soup
 
 
-def save_parallel_soup(normal_soup, normal_url, easy_soup, easy_url, publication_date):
+def save_parallel_soup(normal_soup, normal_url, easy_soup, easy_url, publication_date=None):
     normal_foldername, normal_filename = url_to_paths(normal_url)
     easy_foldername, easy_filename = url_to_paths(easy_url)
 
@@ -117,7 +117,7 @@ def test_condition(block, condition):
         return bool(res)
 
 
-def get_urls_from_soup(soup, base_url, find_args: list[str, dict], condition=""):
+def get_urls_from_soup(soup, base_url, find_args: list[str, dict], condition="") -> list[str]:
     blocks = soup.find_all(*find_args)
     links = []
     for block in blocks:
@@ -132,22 +132,29 @@ def get_urls_from_soup(soup, base_url, find_args: list[str, dict], condition="")
     urls = list(set(urls))
     return urls
 
-def filter_urls(urls):
+
+def filter_urls(urls: list, base_url) -> list:
     """ Removes urls that have already been crawled
     """
-    foldername, filename = url_to_paths(url[0])
+    foldername, filename = url_to_paths(urls[0])
     header_path = Path(foldername, "header.json")
-    with open(header_path, "r", encoding="utf-8") as f:
-        header=json.load(f)
-    
-    keys = header.keys()
-    urls = [url for url in urls if url not in keys]
+
+    # remove urls leaving the website
+    urls = [url for url in urls if base_url in url]
+    if os.path.exists(header_path):
+        with open(header_path, "r", encoding="utf-8") as f:
+            header = json.load(f)
+            keys = header.keys()
+            # remove already downloaded urls
+            urls = [url for url in urls if url not in keys]
     return urls
 
 
 def log_missing_url(url):
     foldername, _ = url_to_paths(url)
     path = Path(foldername, "log.txt")
+    if not os.path.exists(foldername):
+        os.mkdir(foldername)
     with open(path, "a", encoding="utf-8") as f:
         current_time = datetime.now().isoformat(timespec="seconds")
         f.write(f"{current_time} No matching url found for: {url}")
