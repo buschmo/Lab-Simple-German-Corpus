@@ -10,7 +10,7 @@ There are three content pages on mdr.de
 """
 
 
-def crawl_sites(easy_urls, base_url):
+def crawl_site(easy_urls, base_url):
     for easy_url in easy_urls:
         easy_soup = utl.read_soup(easy_url)
 
@@ -47,7 +47,7 @@ def daily():
     easy_news_urls = utl.get_urls_from_soup(
         main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
 
-    crawl_sites(easy_news_urls, base_url)
+    crawl_site(easy_news_urls, base_url)
 
 
 def main():
@@ -59,7 +59,7 @@ def main():
     easy_news_urls = utl.get_urls_from_soup(
         main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
 
-    crawl_sites(easy_news_urls, base_url)
+    crawl_site(easy_news_urls, base_url)
 
     # crawl archived articles
     archive_urls = [
@@ -74,7 +74,7 @@ def main():
         easy_information_urls = utl.get_urls_from_soup(
             archive_soup, base_url, ["div", {"class": string}])
 
-        crawl_sites(easy_information_urls, base_url)
+        crawl_site(easy_information_urls, base_url)
 
 
 if __name__ == '__main__':
