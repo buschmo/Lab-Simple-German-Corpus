@@ -22,7 +22,7 @@ SCRAPE_DELAY = 5
 LAST_SCRAPE = None
 
 
-def read_soup(url):
+def read_soup(url: str):
     foldername, filename = url_to_paths(url)
 
     filepath = Path(foldername, filename)
@@ -36,7 +36,7 @@ def read_soup(url):
     return soup
 
 
-def save_parallel_soup(normal_soup, normal_url, easy_soup, easy_url, publication_date=None):
+def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, publication_date=None):
     normal_foldername, normal_filename = url_to_paths(normal_url)
     easy_foldername, easy_filename = url_to_paths(easy_url)
 
@@ -49,7 +49,7 @@ def save_parallel_soup(normal_soup, normal_url, easy_soup, easy_url, publication
         save_header(filepath, easy_url, publication_date, normal_filename)
 
 
-def save_soup(soup, filepath):
+def save_soup(soup, filepath: Path):
     if not os.path.exists(filepath.parent):
         os.mkdir(filepath.parent)
 
@@ -66,7 +66,7 @@ def save_soup(soup, filepath):
         return False
 
 
-def save_header(filepath, url, publication_date, matching_file):
+def save_header(filepath, url: str, publication_date, matching_file):
     headerpath = Path(filepath.parent, "header.json")
 
     if not os.path.exists(filepath.parent):
@@ -88,14 +88,14 @@ def save_header(filepath, url, publication_date, matching_file):
         json.dump(header, f, indent=4)
 
 
-def url_to_paths(url):
+def url_to_paths(url: str):
     parsed_url = urllib.parse.urlparse(url)
     filename = parsed_url.netloc + parsed_url.path.replace("/", "__")
     foldername = urllib.parse.urlparse(url).netloc
     return foldername, filename
 
 
-def get_soup_from_url(url):
+def get_soup_from_url(url: str):
     global LAST_SCRAPE
     if LAST_SCRAPE is not None:
         time_since_last = datetime.now() - LAST_SCRAPE
@@ -111,11 +111,11 @@ def get_soup_from_url(url):
     return BeautifulSoup(response.text, 'html.parser')
 
 
-def get_urls_from_soup(soup, base_url, filter_args: dict={}, recursive_filter: dict={}) -> list[str]:
+def get_urls_from_soup(soup, base_url: str, filter_args: dict={}, recursive_filter_args: dict={}) -> list[str]:
     if filter_args:
         blocks = soup.find_all(**filter_args)
-        if recursive_filter:
-            blocks = [block for block in blocks if block.find(**recursive_filter)]
+        if recursive_filter_args:
+            blocks = [block for block in blocks if block.find(**recursive_filter_args)]
     else:
         blocks = [soup]
 
@@ -132,7 +132,7 @@ def get_urls_from_soup(soup, base_url, filter_args: dict={}, recursive_filter: d
     return urls
 
 
-def filter_urls(urls: list, base_url) -> list:
+def filter_urls(urls: list, base_url: str) -> list:
     """ Removes urls that have already been crawled
     """
     foldername, filename = url_to_paths(urls[0])
@@ -149,21 +149,32 @@ def filter_urls(urls: list, base_url) -> list:
     return urls
 
 
-def log_missing_url(url):
-    foldername, _ = url_to_paths(url)
-    path = Path(foldername, "log.txt")
-    if not os.path.exists(foldername):
-        os.mkdir(foldername)
-    with open(path, "a", encoding="utf-8") as f:
-        current_time = datetime.now().isoformat(timespec="seconds")
-        f.write(f"{current_time} No matching url found for: {url}\n")
+def log_missing_url(url: str):
+    if not already_logged(url):
+        foldername, _ = url_to_paths(url)
+        path = Path(foldername, "log.txt")
+        if not os.path.exists(foldername):
+            os.mkdir(foldername)
+        
+        with open(path, "a", encoding="utf-8") as f:
+            current_time = datetime.now().isoformat(timespec="seconds")
+            f.write(f"{current_time} No matching url found for: {url}\n")
 
 
-def log_multiple_url(url):
+def log_multiple_url(url: str):
+    if not already_logged(url):
+        foldername, _ = url_to_paths(url)
+        path = Path(foldername, "log.txt")
+        if not os.path.exists(foldername):
+            os.mkdir(foldername)
+        with open(path, "a", encoding="utf-8") as f:
+            current_time = datetime.now().isoformat(timespec="seconds")
+            f.write(f"{current_time} More than one matching url found for: {url}\n")
+
+def already_logged(url: str) -> bool:
     foldername, _ = url_to_paths(url)
     path = Path(foldername, "log.txt")
-    if not os.path.exists(foldername):
-        os.mkdir(foldername)
-    with open(path, "a", encoding="utf-8") as f:
-        current_time = datetime.now().isoformat(timespec="seconds")
-        f.write(f"{current_time} More than one matching url found for: {url}\n")
+    if os.path.exists(path):
+        with open(path, "r") as f:
+            content = f.read()
+            return bool(url in content)
