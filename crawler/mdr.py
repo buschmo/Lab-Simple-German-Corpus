@@ -20,22 +20,24 @@ def crawl_site(easy_urls, base_url):
         normal_urls = utl.get_urls_from_soup(
             easy_soup,
             base_url,
-            ["div", {
-                "class": "con cssBoxTeaserStandard conInline"
-            }],
-            ["Hier können Sie diese Nachricht auch in schwerer Sprache lesen",
-             "Hier können Sie die Nachrichte auch in schwerer Sprache nachlesen",
-             ])
+            filter_args={
+                "name": "div",
+                "attrs": {"class": "con cssBoxTeaserStandard conInline"}
+            },
+            recursive_filter_args={
+                "string": re.compile("auch in schwerer Sprache", flags=re.I)
+            }
+        )
+
         try:
             normal_url = normal_urls[0]
+            normal_soup = utl.read_soup(normal_url)
+
+            utl.save_parallel_soup(normal_soup, normal_url,
+                                   easy_soup, easy_url, publication_date)
         except IndexError as e:
             utl.log_missing_url(easy_url)
             continue
-
-        normal_soup = utl.read_soup(normal_url)
-
-        utl.save_parallel_soup(normal_soup, normal_url,
-                           easy_soup, easy_url, publication_date)
 
 
 def daily():
@@ -45,7 +47,11 @@ def daily():
     # crawl current news articles
     main_soup = utl.read_soup(home_url)
     easy_news_urls = utl.get_urls_from_soup(
-        main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
+        main_soup,
+        base_url,
+        {"name": "div",
+         "attrs": {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}
+         })
 
     crawl_site(easy_news_urls, base_url)
 
@@ -57,7 +63,11 @@ def main():
     # crawl current news articles
     main_soup = utl.read_soup(home_url)
     easy_news_urls = utl.get_urls_from_soup(
-        main_soup, base_url, ["div", {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}])
+        main_soup,
+        base_url,
+        {"name": "div",
+         "attrs": {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}
+         })
 
     crawl_site(easy_news_urls, base_url)
 
@@ -72,7 +82,11 @@ def main():
         archive_soup = utl.read_soup(archive_url)
         string = "targetNode-nachrichten-leichte-sprache"
         easy_information_urls = utl.get_urls_from_soup(
-            archive_soup, base_url, ["div", {"class": string}])
+            archive_soup,
+            base_url,
+            {"name": "div",
+             "attrs": {"class": string}
+             })
 
         crawl_site(easy_information_urls, base_url)
 
