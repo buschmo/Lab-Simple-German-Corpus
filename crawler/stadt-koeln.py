@@ -33,7 +33,6 @@ def crawl_site(easy_url, base_url):
         utl.save_parallel_soup(normal_soup, normal_url,
                                easy_soup, easy_url)
     except IndexError as e:
-        print("Err")
         utl.log_missing_url(easy_url)
 
 
