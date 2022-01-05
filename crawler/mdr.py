@@ -12,7 +12,7 @@ There are three content pages on mdr.de
 
 def crawl_site(easy_urls, base_url):
     for i, easy_url in enumerate(easy_urls):
-        print(f"[{i}/{len(easy_urls)}] Crawling {easy_url}")
+        print(f"[{i+1}/{len(easy_urls)}] Crawling {easy_url}")
         easy_soup = utl.read_soup(easy_url)
 
         publication_date = str(easy_soup.find(
