@@ -54,12 +54,8 @@ def main():
         [utl.parse_url(tag["href"], base_url) for tag in easy_url_tags]
     ))
 
-    easy_urls = [
-        # "https://www.augsburger-allgemeine.de/special/nachrichten-in-leichter-sprache/Leichte-Sprache-Roboter-singt-und-tanzt-mit-alten-Leuten-id41633526.html",
-        "https://www.augsburger-allgemeine.de/special/nachrichten-in-leichter-sprache/Leichte-Sprache-FCA-Kapitaen-Baier-bekommt-Sperre-id42744531.html"
-        ]
     for i, easy_url in enumerate(easy_urls):
-        print(f"[{i+1:0>3}/{len(easy_urls)}] Crawling {easy_url}")
+        print(f"[{i+1:0>2}/{len(easy_urls)}] Crawling {easy_url}")
         crawl_site(easy_url, base_url)
 
 
