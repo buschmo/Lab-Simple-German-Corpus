@@ -111,21 +111,17 @@ def get_soup_from_url(url):
     return BeautifulSoup(response.text, 'html.parser')
 
 
-def test_condition(block, condition):
-    if isinstance(condition, list):
-        res = [i for i in condition if re.search(i, str(block), re.I)]
-        return bool(res)
+def get_urls_from_soup(soup, base_url, filter_args: dict={}, recursive_filter: dict={}) -> list[str]:
+    if filter_args:
+        blocks = soup.find_all(**filter_args)
+        if recursive_filter:
+            blocks = [block for block in blocks if block.find(**recursive_filter)]
     else:
-        res = re.search(condition, str(block), re.I)
-        return bool(res)
+        blocks = [soup]
 
-
-def get_urls_from_soup(soup, base_url, find_args: list[str, dict], condition="") -> list[str]:
-    blocks = soup.find_all(*find_args)
     links = []
     for block in blocks:
-        if test_condition(block, condition):
-            links.extend(block.find_all("a", href=True))
+        links.extend(block.find_all("a", href=True))
 
     urls = []
     for l in links:
@@ -160,4 +156,14 @@ def log_missing_url(url):
         os.mkdir(foldername)
     with open(path, "a", encoding="utf-8") as f:
         current_time = datetime.now().isoformat(timespec="seconds")
-        f.write(f"{current_time} No matching url found for: {url}")
+        f.write(f"{current_time} No matching url found for: {url}\n")
+
+
+def log_multiple_url(url):
+    foldername, _ = url_to_paths(url)
+    path = Path(foldername, "log.txt")
+    if not os.path.exists(foldername):
+        os.mkdir(foldername)
+    with open(path, "a", encoding="utf-8") as f:
+        current_time = datetime.now().isoformat(timespec="seconds")
+        f.write(f"{current_time} More than one matching url found for: {url}\n")
