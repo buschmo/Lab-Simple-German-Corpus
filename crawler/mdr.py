@@ -11,34 +11,31 @@ There are three content pages on mdr.de
 
 
 def crawl_site(easy_urls, base_url):
-    for i, easy_url in enumerate(easy_urls):
-        print(f"[{i+1}/{len(easy_urls)}] Crawling {easy_url}")
-        easy_soup = utl.read_soup(easy_url)
+    easy_soup = utl.read_soup(easy_url)
 
-        publication_date = str(easy_soup.find(
-            "p", {"class": "webtime"}).find_all("span")[1])[6:-9]
+    publication_date = str(easy_soup.find(
+        "p", {"class": "webtime"}).find_all("span")[1])[6:-9]
 
-        normal_urls = utl.get_urls_from_soup(
-            easy_soup,
-            base_url,
-            filter_args={
-                "name": "div",
-                "attrs": {"class": "con cssBoxTeaserStandard conInline"}
-            },
-            recursive_filter_args={
-                "string": re.compile("auch in schwerer Sprache", flags=re.I)
-            }
-        )
+    normal_urls = utl.get_urls_from_soup(
+        easy_soup,
+        base_url,
+        filter_args={
+            "name": "div",
+            "attrs": {"class": "con cssBoxTeaserStandard conInline"}
+        },
+        recursive_filter_args={
+            "string": re.compile("auch in schwerer Sprache", flags=re.I)
+        }
+    )
 
-        try:
-            normal_url = normal_urls[0]
-            normal_soup = utl.read_soup(normal_url)
+    try:
+        normal_url = normal_urls[0]
+        normal_soup = utl.read_soup(normal_url)
 
-            utl.save_parallel_soup(normal_soup, normal_url,
-                                   easy_soup, easy_url, publication_date)
-        except IndexError as e:
-            utl.log_missing_url(easy_url)
-            continue
+        utl.save_parallel_soup(normal_soup, normal_url,
+                                easy_soup, easy_url, publication_date)
+    except IndexError as e:
+        utl.log_missing_url(easy_url)
 
 
 def daily():
@@ -54,7 +51,9 @@ def daily():
          "attrs": {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}
          })
 
-    crawl_site(easy_news_urls, base_url)
+    for easy_url in easy_news_urls:
+        print(f"[{i+1}/{len(easy_urls)}] Crawling {easy_url}")
+        crawl_site(easy_news_url, base_url)
 
 
 def main():
@@ -89,7 +88,9 @@ def main():
              "attrs": {"class": string}
              })
 
-        crawl_site(easy_information_urls, base_url)
+        for easy_url in easy_information_urls:
+            print(f"[{i+1}/{len(easy_information_urls)}] Crawling {easy_url}")
+            crawl_site(easy_information_urls, base_url)
 
 
 if __name__ == '__main__':
