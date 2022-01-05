@@ -11,7 +11,8 @@ There are three content pages on mdr.de
 
 
 def crawl_site(easy_urls, base_url):
-    for easy_url in easy_urls:
+    for i, easy_url in enumerate(easy_urls):
+        print(f"[{i}/{len(easy_urls)}] Crawling {easy_url}")
         easy_soup = utl.read_soup(easy_url)
 
         publication_date = str(easy_soup.find(
@@ -78,8 +79,8 @@ def main():
         "https://www.mdr.de/nachrichten-leicht/rueckblick/leichte-sprache-rueckblick-buendelgruppe-thueringen-100.html"
     ]
 
-    for archive_url in archive_urls:
-        archive_soup = utl.read_soup(archive_url)
+    for url in archive_urls:
+        archive_soup = utl.read_soup(url)
         string = "targetNode-nachrichten-leichte-sprache"
         easy_information_urls = utl.get_urls_from_soup(
             archive_soup,
@@ -92,4 +93,4 @@ def main():
 
 
 if __name__ == '__main__':
-    daily()
+    main()
