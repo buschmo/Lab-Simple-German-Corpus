@@ -3,11 +3,6 @@ import utilities as utl
 import re
 from bs4 import BeautifulSoup
 
-""" Lebenshilfe Main Taunus
-Ignore /dokument/
-
-"""
-
 
 def crawl_site(easy_url, base_url):
     easy_soup = utl.read_soup(easy_url)

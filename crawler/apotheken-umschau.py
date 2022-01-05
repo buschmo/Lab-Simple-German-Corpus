@@ -3,11 +3,6 @@ import utilities as utl
 import re
 from bs4 import BeautifulSoup
 
-""" Lebenshilfe Main Taunus
-Ignore /dokument/
-
-"""
-
 
 def crawl_site(easy_url, base_url):
     easy_soup = utl.read_soup(easy_url)
@@ -22,7 +17,8 @@ def crawl_site(easy_url, base_url):
         attrs={"class": "btn btn-primary mb-3"}
     )
 
-    normals_urls = [utl.parse_url(tag["href"], base_url) for tag in easy_url_tags]
+    normals_urls = [utl.parse_url(tag["href"], base_url)
+                    for tag in easy_url_tags]
 
     for normal_url in normals_urls:
         normal_soup = utl.read_soup(normal_url)
