@@ -54,7 +54,7 @@ def save_soup(soup, filepath):
         os.mkdir(filepath.parent)
 
     if filepath.suffix != ".html":
-        filepath = Path(filepath, ".html")
+        filepath = Path(str(filepath)+".html")
 
     if not os.path.exists(filepath):
         with open(filepath, "w", encoding="utf-8") as f:
