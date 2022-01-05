@@ -41,12 +41,12 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
     easy_foldername, easy_filename = url_to_paths(easy_url)
 
     filepath = Path(normal_foldername, normal_filename)
-    if save_soup(normal_soup, filepath):
-        save_header(filepath, normal_url, publication_date, easy_filename)
+    save_soup(normal_soup, filepath)
+    save_header(filepath, normal_url, publication_date, easy_filename)
 
     filepath = Path(easy_foldername, easy_filename)
-    if save_soup(easy_soup, filepath):
-        save_header(filepath, easy_url, publication_date, normal_filename)
+    save_soup(easy_soup, filepath)
+    save_header(filepath, easy_url, publication_date, normal_filename)
 
 
 def save_soup(soup, filepath: Path):
@@ -59,11 +59,8 @@ def save_soup(soup, filepath: Path):
     if not os.path.exists(filepath):
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(soup.prettify())
-        return True
     else:
-        # maybe implement logging utilities
-        # print(f"File {str(filepath)} already exists.")
-        return False
+        log_resaving_file(filepath)
 
 
 def save_header(filepath, url: str, publication_date, matching_file):
@@ -78,12 +75,17 @@ def save_header(filepath, url: str, publication_date, matching_file):
             header = json.load(f)
     else:
         header = {}
-    header[url] = {
-        "filename": filepath.name,
-        "crawl_date": str(date.today()),
-        "publication_date": publication_date,
-        "matching_file": matching_file
-    }
+
+    # if the file was already downloaded and used, simply append to the list
+    if url in header.keys():
+        header[url]["matching_file"].append(matching_file)
+    else:
+        header[url] = {
+            "filename": filepath.name,
+            "crawl_date": str(date.today()),
+            "publication_date": publication_date,
+            "matching_file": [matching_file]
+        }
     with open(headerpath, "w", encoding="utf-8") as f:
         json.dump(header, f, indent=4)
 
@@ -111,11 +113,12 @@ def get_soup_from_url(url: str):
     return BeautifulSoup(response.text, 'html.parser')
 
 
-def get_urls_from_soup(soup, base_url: str, filter_args: dict={}, recursive_filter_args: dict={}) -> list[str]:
+def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_filter_args: dict = {}) -> list[str]:
     if filter_args:
         blocks = soup.find_all(**filter_args)
         if recursive_filter_args:
-            blocks = [block for block in blocks if block.find(**recursive_filter_args)]
+            blocks = [block for block in blocks if block.find(
+                **recursive_filter_args)]
     else:
         blocks = [soup]
 
@@ -130,6 +133,11 @@ def get_urls_from_soup(soup, base_url: str, filter_args: dict={}, recursive_filt
 
     urls = list(set(urls))
     return urls
+
+
+def parse_url(url, base_url):
+    url = urllib.parse.urljoin(base_url, url)
+    return url 
 
 
 def filter_urls(urls: list, base_url: str) -> list:
@@ -155,7 +163,7 @@ def log_missing_url(url: str):
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
             os.mkdir(foldername)
-        
+
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
             f.write(f"{current_time} No matching url found for: {url}\n")
@@ -169,12 +177,28 @@ def log_multiple_url(url: str):
             os.mkdir(foldername)
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
-            f.write(f"{current_time} More than one matching url found for: {url}\n")
+            f.write(
+                f"{current_time} More than one matching url found for: {url}\n")
 
-def already_logged(url: str) -> bool:
-    foldername, _ = url_to_paths(url)
+
+def log_resaving_file(filepath: Path):
+    foldername = filepath.parent
+    filename = filepath.name
+    if not already_logged(filename):
+        # print(f"File {str(filepath)} already exists.")
+        path = Path(foldername, "log.txt")
+        if not os.path.exists(foldername):
+            os.mkdir(foldername)
+        with open(path, "a", encoding="utf-8") as f:
+            current_time = datetime.now().isoformat(timespec="seconds")
+            f.write(
+                f"{current_time} The file is used for several matches: {filename}\n")
+
+
+def already_logged(identifier: str) -> bool:
+    foldername, _ = url_to_paths(identifier)
     path = Path(foldername, "log.txt")
     if os.path.exists(path):
         with open(path, "r") as f:
             content = f.read()
-            return bool(url in content)
+            return bool(identifier in content)
