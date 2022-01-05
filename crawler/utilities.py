@@ -136,7 +136,8 @@ def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_fi
 
 
 def parse_url(url, base_url):
-    url = urllib.parse.urljoin(base_url, url)
+    if base_url not in url:
+        url = urllib.parse.urljoin(base_url, url)
     return url 
 
 
