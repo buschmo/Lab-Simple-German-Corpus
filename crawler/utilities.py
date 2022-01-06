@@ -23,7 +23,7 @@ LAST_SCRAPE = None
 
 
 def read_soup(url: str):
-    filepath = url_to_path(url)
+    filepath = get_path_from_url(url)
 
     if os.path.exists(filepath):
         with open(filepath, "r", encoding="utf-8") as f:
@@ -35,8 +35,8 @@ def read_soup(url: str):
 
 
 def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, publication_date=None):
-    normal_filepath = url_to_path(normal_url)
-    easy_filepath = url_to_path(easy_url)
+    normal_filepath = get_path_from_url(normal_url)
+    easy_filepath = get_path_from_url(easy_url)
 
     save_soup(normal_soup, normal_filepath)
     save_header(normal_filepath, normal_url,
@@ -86,7 +86,7 @@ def save_header(filepath, url: str, matching_filepath: Path, publication_date=No
         json.dump(header, f, indent=4)
 
 
-def url_to_path(url: str) -> Path:
+def get_path_from_url(url: str) -> Path:
     parsed_url = urllib.parse.urlparse(url)
     foldername = parsed_url.netloc
     filename = parsed_url.netloc + parsed_url.path.replace("/", "__")
@@ -148,7 +148,7 @@ def parse_url(url, base_url):
 def filter_urls(urls: list, base_url: str) -> list:
     """ Removes urls that have already been crawled
     """
-    file_path = url_to_path(urls[0])
+    file_path = get_path_from_url(urls[0])
     header_path = Path(filepath.parent, "header.json")
 
     # remove urls leaving the website
@@ -164,7 +164,7 @@ def filter_urls(urls: list, base_url: str) -> list:
 
 def log_missing_url(url: str):
     if not already_logged(url):
-        foldername = url_to_path(url).parent
+        foldername = get_path_from_url(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
             os.mkdirs(foldername)
@@ -176,7 +176,7 @@ def log_missing_url(url: str):
 
 def log_multiple_url(url: str):
     if not already_logged(url):
-        foldername = url_to_path(url).parent
+        foldername = get_path_from_url(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
             os.mkdirs(foldername)
@@ -201,7 +201,7 @@ def log_resaving_file(filepath: Path):
 
 
 def already_logged(identifier: str) -> bool:
-    foldername = url_to_path(identifier).parent
+    foldername = get_path_from_url(identifier).parent
     path = Path(foldername, "log.txt")
     if os.path.exists(path):
         with open(path, "r") as f:
