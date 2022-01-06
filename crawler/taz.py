@@ -27,8 +27,7 @@ def crawl_site(easy_url, base_url):
         utl.log_missing_url(easy_url)
 
 
-def main():
-    base_url = "https://taz.de/"
+def crawling(base_url):
     easy_url = "https://taz.de/Politik/Deutschland/Leichte-Sprache/!p5097/"
 
     soup = utl.read_soup(easy_url)
@@ -36,7 +35,7 @@ def main():
                               role="directory",
                               debug="x1",
                               class_="news directory")
-    
+
     easy_urls = [utl.parse_url(link["href"], base_url)
                  for tag in soup_tags for link in tag.find_all(name="a", href=True)]
 
@@ -46,6 +45,11 @@ def main():
     for i, easy_url in enumerate(easy_urls):
         print(f"{i+1:0>2}/{len(easy_urls)} Crawling {easy_url}")
         crawl_site(easy_url, base_url)
+
+
+def main():
+    base_url = "https://taz.de/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

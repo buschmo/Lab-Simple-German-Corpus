@@ -10,9 +10,7 @@ def crawl_site(url):
     utl.save_header(filepath, url, filepath)
 
 
-def main(overview_url="https://www.unsere-zeitung.at/category/nachrichten/topeasy/"):
-    base_url = "https://www.unsere-zeitung.at/"
-
+def crawling(base_url, overview_url="https://www.unsere-zeitung.at/category/nachrichten/topeasy/"):
     overview_soup = utl.read_soup(overview_url)
 
     article_tag = overview_soup.find(name="div",
@@ -36,7 +34,11 @@ def main(overview_url="https://www.unsere-zeitung.at/category/nachrichten/topeas
     )
     if next_overview_url:
         print("Opening next page.")
-        main(next_overview_url["href"])
+        crawling(base_url, next_overview_url["href"])
+
+def main():
+    base_url = "https://www.unsere-zeitung.at/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

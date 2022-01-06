@@ -6,11 +6,11 @@ def crawl_site(easy_url, base_url):
     easy_soup = utl.read_soup(easy_url)
 
     easy_soup_tag = easy_soup.find(name="a",
-                                         title=re.compile(
-                                             "Lesen Sie den Artikel .* in Alltagssprache", flags=re.I),
-                                         class_="c-language-switch__l c-language-switch__l--as",
-                                         string="Alltagssprache"
-                                         )
+                                   title=re.compile(
+                                       "Lesen Sie den Artikel .* in Alltagssprache", flags=re.I),
+                                   class_="c-language-switch__l c-language-switch__l--as",
+                                   string="Alltagssprache"
+                                   )
 
     if easy_soup_tag:
         normal_url = utl.parse_url(
@@ -23,8 +23,7 @@ def crawl_site(easy_url, base_url):
         utl.log_missing_url(easy_url)
 
 
-def main():
-    base_url = "https://www.behindertenbeauftragter.de/"
+def crawling(base_url):
     easy_url = "https://www.behindertenbeauftragter.de/DE/LS/startseite/startseite-node.html"
 
     soup = utl.read_soup(easy_url)
@@ -38,6 +37,11 @@ def main():
     for i, easy_url in enumerate(easy_urls):
         print(f"{i+1:0>2}/{len(easy_urls)} Crawling {easy_url}")
         crawl_site(easy_url, base_url)
+
+
+def main():
+    base_url = "https://www.behindertenbeauftragter.de/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

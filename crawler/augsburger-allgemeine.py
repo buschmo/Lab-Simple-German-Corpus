@@ -16,17 +16,17 @@ def crawl_site(easy_url, base_url):
     if easy_url_tag_previous:
         easy_url_tags = easy_url_tag_previous.find_next_sibling("div")
         easy_url_tags = easy_url_tags.find_all(name="a", href=True)
-        normals_urls = [utl.parse_url(url["href"], base_url) for url in easy_url_tags]
+        normals_urls = [utl.parse_url(url["href"], base_url)
+                        for url in easy_url_tags]
 
         for normal_url in normals_urls:
             normal_soup = utl.read_soup(normal_url)
 
             utl.save_parallel_soup(normal_soup, normal_url,
-                                easy_soup, easy_url)
+                                   easy_soup, easy_url)
 
     else:
         utl.log_missing_url(easy_url)
-
 
 
 def filter_urls(urls, base_url):
@@ -37,8 +37,7 @@ def filter_urls(urls, base_url):
     return urls
 
 
-def main():
-    base_url = "https://www.augsburger-allgemeine.de/"
+def crawling(base_url):
     home_url_easy = "https://www.augsburger-allgemeine.de/special/nachrichten-in-leichter-sprache/"
 
     # get urls
@@ -57,6 +56,11 @@ def main():
     for i, easy_url in enumerate(easy_urls):
         print(f"[{i+1:0>2}/{len(easy_urls)}] Crawling {easy_url}")
         crawl_site(easy_url, base_url)
+
+
+def main():
+    base_url = "https://www.augsburger-allgemeine.de/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

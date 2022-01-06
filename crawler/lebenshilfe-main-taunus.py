@@ -67,13 +67,17 @@ def filter_urls(urls, base_url):
     return urls
 
 
-def main():
-    base_url = "https://www.lebenshilfe-main-taunus.de/"
+def crawling(base_url):
     home_url_easy = "https://www.lebenshilfe-main-taunus.de/ls/"
 
     print("### Remember to ignore /dokument/ ###")
 
     crawl_site(home_url_easy, base_url)
+
+
+def main():
+    base_url = "https://www.lebenshilfe-main-taunus.de/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

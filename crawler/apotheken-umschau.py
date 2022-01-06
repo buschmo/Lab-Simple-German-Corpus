@@ -35,8 +35,7 @@ def filter_urls(urls, base_url):
     return urls
 
 
-def main():
-    base_url = "https://www.apotheken-umschau.de/"
+def crawling(base_url):
     home_url_easy = "https://www.apotheken-umschau.de/einfache-sprache/"
 
     # get urls
@@ -52,6 +51,11 @@ def main():
     for i, easy_url in enumerate(easy_urls):
         print(f"[{i+1:0>3}/{len(easy_urls)}] Crawling {easy_url}")
         crawl_site(easy_url, base_url)
+
+
+def main():
+    base_url = "https://www.apotheken-umschau.de/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

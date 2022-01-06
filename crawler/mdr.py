@@ -59,8 +59,7 @@ def daily():
         crawl_site(easy_news_url, base_url)
 
 
-def main():
-    base_url = "https://www.mdr.de/"
+def crawling(base_url):
     home_url = "https://www.mdr.de/nachrichten-leicht/index.html"
 
     # crawl current news articles
@@ -94,6 +93,11 @@ def main():
         for easy_url in easy_information_urls:
             print(f"[{i+1}/{len(easy_information_urls)}] Crawling {easy_url}")
             crawl_site(easy_information_urls, base_url)
+
+
+def main():
+    base_url = "https://www.mdr.de/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

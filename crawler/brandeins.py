@@ -18,8 +18,7 @@ def crawl_site(url, base_url):
         utl.log_missing_url(url)
 
 
-def main():
-    base_url = "https://www.brandeins.de/"
+def crawling(base_url):
     easy_url = "https://www.brandeins.de/themen/rubriken/leichte-sprache"
 
     soup = utl.read_soup(easy_url)
@@ -32,6 +31,11 @@ def main():
     for i, url in enumerate(urls):
         print(f"{i+1:0>2}/{len(urls)} Crawling {url}")
         crawl_site(url, base_url)
+
+
+def main():
+    base_url = "https://www.brandeins.de/"
+    crawling(base_url)
 
 
 if __name__ == '__main__':

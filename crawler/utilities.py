@@ -49,7 +49,7 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
 
 def save_soup(soup, filepath: Path):
     if not os.path.exists(filepath.parent):
-        os.mkdir(filepath.parent)
+        os.mkdirs(filepath.parent)
 
     if not os.path.exists(filepath):
         with open(filepath, "w", encoding="utf-8") as f:
@@ -63,7 +63,7 @@ def save_header(filepath, url: str, matching_filepath: Path, publication_date=No
     headerpath = Path(filepath.parent, "header.json")
 
     if not os.path.exists(filepath.parent):
-        os.mkdir(filepath.parent)
+        os.mkdirs(filepath.parent)
 
     # save header information
     if os.path.exists(headerpath):
@@ -94,7 +94,7 @@ def url_to_path(url: str) -> Path:
         filename += ".html"
     if not foldername.startswith("www."):
         foldername = "www." + foldername
-    return Path(foldername, filename)
+    return Path("crawled", foldername, filename)
 
 
 def get_soup_from_url(url: str):
@@ -134,6 +134,10 @@ def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_fi
     urls = list(set(urls))
     return urls
 
+def get_crawled_paths(url: str) -> list[Path]:
+    filepath = Path(url)
+    return filepath
+
 
 def parse_url(url, base_url):
     if base_url not in url:
@@ -163,7 +167,7 @@ def log_missing_url(url: str):
         foldername = url_to_path(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
-            os.mkdir(foldername)
+            os.mkdirs(foldername)
 
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
@@ -175,7 +179,7 @@ def log_multiple_url(url: str):
         foldername = url_to_path(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
-            os.mkdir(foldername)
+            os.mkdirs(foldername)
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
             f.write(
@@ -189,7 +193,7 @@ def log_resaving_file(filepath: Path):
         # print(f"File {str(filepath)} already exists.")
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
-            os.mkdir(foldername)
+            os.mkdirs(foldername)
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
             f.write(
