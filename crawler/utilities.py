@@ -40,11 +40,11 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
 
     save_soup(normal_soup, normal_filepath)
     save_header(normal_filepath, normal_url,
-                publication_date, easy_filepath.name)
+                publication_date, easy_filepath)
 
     save_soup(easy_soup, easy_filepath)
     save_header(easy_filepath, easy_url,
-                publication_date, normal_filepath.name)
+                publication_date, normal_filepath)
 
 
 def save_soup(soup, filepath: Path):
@@ -58,7 +58,8 @@ def save_soup(soup, filepath: Path):
         log_resaving_file(filepath)
 
 
-def save_header(filepath, url: str, publication_date, matching_file):
+def save_header(filepath, url: str, publication_date, matching_filepath:Path):
+    key = filepath.name
     headerpath = Path(filepath.parent, "header.json")
 
     if not os.path.exists(filepath.parent):
@@ -72,14 +73,14 @@ def save_header(filepath, url: str, publication_date, matching_file):
         header = {}
 
     # if the file was already downloaded and used, simply append to the list
-    if url in header.keys():
-        header[url]["matching_file"].append(matching_file)
+    if key in header.keys():
+        header[key]["matching_file"].append(matching_filepath.name)
     else:
-        header[url] = {
-            "filename": filepath.name,
+        header[key] = {
+            "url": url,
             "crawl_date": str(date.today()),
             "publication_date": publication_date,
-            "matching_file": [matching_file]
+            "matching_file": [matching_filepath.name]
         }
     with open(headerpath, "w", encoding="utf-8") as f:
         json.dump(header, f, indent=4)
