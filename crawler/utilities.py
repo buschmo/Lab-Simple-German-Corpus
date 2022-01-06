@@ -23,13 +23,11 @@ LAST_SCRAPE = None
 
 
 def read_soup(url: str):
-    foldername, filename = url_to_paths(url)
+    filepath = url_to_path(url)
 
-    filepath = Path(foldername, filename)
     if os.path.exists(filepath):
         with open(filepath, "r", encoding="utf-8") as f:
-            text = f.read()
-            soup = BeautifulSoup(text, 'html.parser')
+            soup = BeautifulSoup(f, 'html.parser')
     else:
         soup = get_soup_from_url(url)
 
@@ -37,24 +35,21 @@ def read_soup(url: str):
 
 
 def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, publication_date=None):
-    normal_foldername, normal_filename = url_to_paths(normal_url)
-    easy_foldername, easy_filename = url_to_paths(easy_url)
+    normal_filepath = url_to_path(normal_url)
+    easy_filepath = url_to_path(easy_url)
 
-    filepath = Path(normal_foldername, normal_filename)
-    save_soup(normal_soup, filepath)
-    save_header(filepath, normal_url, publication_date, easy_filename)
+    save_soup(normal_soup, normal_filepath)
+    save_header(normal_filepath, normal_url,
+                publication_date, easy_filepath.name)
 
-    filepath = Path(easy_foldername, easy_filename)
-    save_soup(easy_soup, filepath)
-    save_header(filepath, easy_url, publication_date, normal_filename)
+    save_soup(easy_soup, easy_filepath)
+    save_header(easy_filepath, easy_url,
+                publication_date, normal_filepath.name)
 
 
 def save_soup(soup, filepath: Path):
     if not os.path.exists(filepath.parent):
         os.mkdir(filepath.parent)
-
-    if filepath.suffix != ".html":
-        filepath = Path(str(filepath)+".html")
 
     if not os.path.exists(filepath):
         with open(filepath, "w", encoding="utf-8") as f:
@@ -90,11 +85,15 @@ def save_header(filepath, url: str, publication_date, matching_file):
         json.dump(header, f, indent=4)
 
 
-def url_to_paths(url: str):
+def url_to_path(url: str) -> Path:
     parsed_url = urllib.parse.urlparse(url)
+    foldername = parsed_url.netloc
     filename = parsed_url.netloc + parsed_url.path.replace("/", "__")
-    foldername = urllib.parse.urlparse(url).netloc
-    return foldername, filename
+    if not filename.endswith(".html"):
+        filename += ".html"
+    if not foldername.startswith("www."):
+        foldername = "www." + foldername
+    return Path(foldername, filename)
 
 
 def get_soup_from_url(url: str):
@@ -138,14 +137,14 @@ def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_fi
 def parse_url(url, base_url):
     if base_url not in url:
         url = urllib.parse.urljoin(base_url, url)
-    return url 
+    return url
 
 
 def filter_urls(urls: list, base_url: str) -> list:
     """ Removes urls that have already been crawled
     """
-    foldername, filename = url_to_paths(urls[0])
-    header_path = Path(foldername, "header.json")
+    file_path = url_to_path(urls[0])
+    header_path = Path(filepath.parent, "header.json")
 
     # remove urls leaving the website
     urls = [url for url in urls if base_url in url]
@@ -160,7 +159,7 @@ def filter_urls(urls: list, base_url: str) -> list:
 
 def log_missing_url(url: str):
     if not already_logged(url):
-        foldername, _ = url_to_paths(url)
+        foldername = url_to_path(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
             os.mkdir(foldername)
@@ -172,7 +171,7 @@ def log_missing_url(url: str):
 
 def log_multiple_url(url: str):
     if not already_logged(url):
-        foldername, _ = url_to_paths(url)
+        foldername = url_to_path(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
             os.mkdir(foldername)
@@ -197,7 +196,7 @@ def log_resaving_file(filepath: Path):
 
 
 def already_logged(identifier: str) -> bool:
-    foldername, _ = url_to_paths(identifier)
+    foldername = url_to_path(identifier).parent
     path = Path(foldername, "log.txt")
     if os.path.exists(path):
         with open(path, "r") as f:
