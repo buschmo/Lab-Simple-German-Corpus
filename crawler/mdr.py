@@ -14,7 +14,10 @@ def crawl_site(easy_urls, base_url):
     easy_soup = utl.read_soup(easy_url)
 
     publication_date = str(easy_soup.find(
-        "p", {"class": "webtime"}).find_all("span")[1])[6:-9]
+        "p", {"class": "webtime"}).find_all("span")[1])[6:-9].strip()
+
+    if publication_date.endswith(","):
+        publication_date = publication_date[:-1]
 
     normal_urls = utl.get_urls_from_soup(
         easy_soup,
@@ -33,7 +36,7 @@ def crawl_site(easy_urls, base_url):
         normal_soup = utl.read_soup(normal_url)
 
         utl.save_parallel_soup(normal_soup, normal_url,
-                                easy_soup, easy_url, publication_date)
+                               easy_soup, easy_url, publication_date)
     except IndexError as e:
         utl.log_missing_url(easy_url)
 
