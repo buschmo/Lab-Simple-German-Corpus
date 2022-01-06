@@ -40,11 +40,11 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
 
     save_soup(normal_soup, normal_filepath)
     save_header(normal_filepath, normal_url,
-                publication_date, easy_filepath)
+                easy_filepath, publication_date)
 
     save_soup(easy_soup, easy_filepath)
     save_header(easy_filepath, easy_url,
-                publication_date, normal_filepath)
+                easy_filepath, publication_date)
 
 
 def save_soup(soup, filepath: Path):
@@ -58,7 +58,7 @@ def save_soup(soup, filepath: Path):
         log_resaving_file(filepath)
 
 
-def save_header(filepath, url: str, publication_date, matching_filepath:Path):
+def save_header(filepath, url: str, matching_filepath: Path, publication_date=None):
     key = filepath.name
     headerpath = Path(filepath.parent, "header.json")
 
