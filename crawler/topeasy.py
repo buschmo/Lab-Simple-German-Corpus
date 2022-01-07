@@ -5,7 +5,7 @@ import re
 def crawl_site(url):
     soup = utl.read_soup(url)
 
-    filepath = utl.get_path_from_url(url)
+    filepath = utl.get_crawled_path_from_url(url)
     utl.save_soup(soup, filepath)
     utl.save_header(filepath, url, filepath)
 

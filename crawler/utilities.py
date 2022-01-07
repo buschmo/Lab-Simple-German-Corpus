@@ -6,12 +6,10 @@ import urllib
 from pathlib import Path
 import json
 import re
+from collections.abc import Callable
 
 from datetime import datetime, timedelta, date
 import time
-
-""" Scrapes news from mdr.de
-"""
 
 
 HEADERS = {
@@ -23,7 +21,7 @@ LAST_SCRAPE = None
 
 
 def read_soup(url: str):
-    filepath = get_path_from_url(url)
+    filepath = get_crawled_path_from_url(url)
 
     if os.path.exists(filepath):
         with open(filepath, "r", encoding="utf-8") as f:
@@ -35,8 +33,8 @@ def read_soup(url: str):
 
 
 def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, publication_date=None):
-    normal_filepath = get_path_from_url(normal_url)
-    easy_filepath = get_path_from_url(easy_url)
+    normal_filepath = get_crawled_path_from_url(normal_url)
+    easy_filepath = get_crawled_path_from_url(easy_url)
 
     save_soup(normal_soup, normal_filepath)
     save_header(normal_filepath, normal_url,
@@ -49,7 +47,7 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
 
 def save_soup(soup, filepath: Path):
     if not os.path.exists(filepath.parent):
-        os.mkdirs(filepath.parent)
+        os.makedirs(filepath.parent)
 
     if not os.path.exists(filepath):
         with open(filepath, "w", encoding="utf-8") as f:
@@ -58,12 +56,23 @@ def save_soup(soup, filepath: Path):
         log_resaving_file(filepath)
 
 
+def load_header(url):
+    headerpath = get_headerpath_from_url(url)
+    # save header information
+    if os.path.exists(headerpath):
+        with open(headerpath, "r") as f:
+            header = json.load(f)
+    else:
+        header = {}
+    return header
+
+
 def save_header(filepath, url: str, matching_filepath: Path, publication_date=None):
     key = filepath.name
     headerpath = Path(filepath.parent, "header.json")
 
     if not os.path.exists(filepath.parent):
-        os.mkdirs(filepath.parent)
+        os.makedirs(filepath.parent)
 
     # save header information
     if os.path.exists(headerpath):
@@ -86,7 +95,11 @@ def save_header(filepath, url: str, matching_filepath: Path, publication_date=No
         json.dump(header, f, indent=4)
 
 
-def get_path_from_url(url: str) -> Path:
+def get_headerpath_from_url(url: str) -> Path:
+    return Path(urllib.parse.urlparse(url).netloc, "header.json")
+
+
+def get_names_from_url(url: str) -> [str, str]:
     parsed_url = urllib.parse.urlparse(url)
     foldername = parsed_url.netloc
     filename = parsed_url.netloc + parsed_url.path.replace("/", "__")
@@ -94,7 +107,17 @@ def get_path_from_url(url: str) -> Path:
         filename += ".html"
     if not foldername.startswith("www."):
         foldername = "www." + foldername
-    return Path("crawled", foldername, filename)
+    return foldername, filename
+
+
+def get_parsed_path_from_url(url: str) -> Path:
+    foldername, filename = get_names_from_url(url)
+    return Path(foldername, "parsedt", filename)
+
+
+def get_crawled_path_from_url(url: str) -> Path:
+    foldername, filename = get_names_from_url(url)
+    return Path(foldername, "crawled", filename)
 
 
 def get_soup_from_url(url: str):
@@ -128,15 +151,11 @@ def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_fi
 
     urls = []
     for l in links:
-        link = urllib.parse.urljoin(base_url, l['href'])
+        link = parse_url(l["href"], base_url)
         urls.append(link)
 
     urls = list(set(urls))
     return urls
-
-def get_crawled_paths(url: str) -> list[Path]:
-    filepath = Path(url)
-    return filepath
 
 
 def parse_url(url, base_url):
@@ -145,10 +164,23 @@ def parse_url(url, base_url):
     return url
 
 
+def parse_soup(base_url, parser: Callable[[BeautifulSoup], list[BeautifulSoup]]):
+    header = load_header(base_url)
+    for filename in header.keys():
+        url = header[filename]["url"]
+        soup = read_soup(url)
+
+        parsed_content = parser(soup)
+        return
+
+        filepath = get_crawled_path_from_url(url)
+        save_soup(soup, filepath)
+
+
 def filter_urls(urls: list, base_url: str) -> list:
     """ Removes urls that have already been crawled
     """
-    file_path = get_path_from_url(urls[0])
+    file_path = get_crawled_path_from_url(urls[0])
     header_path = Path(filepath.parent, "header.json")
 
     # remove urls leaving the website
@@ -164,10 +196,10 @@ def filter_urls(urls: list, base_url: str) -> list:
 
 def log_missing_url(url: str):
     if not already_logged(url):
-        foldername = get_path_from_url(url).parent
+        foldername = get_crawled_path_from_url(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
-            os.mkdirs(foldername)
+            os.makedirs(foldername)
 
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
@@ -176,10 +208,10 @@ def log_missing_url(url: str):
 
 def log_multiple_url(url: str):
     if not already_logged(url):
-        foldername = get_path_from_url(url).parent
+        foldername = get_crawled_path_from_url(url).parent
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
-            os.mkdirs(foldername)
+            os.makedirs(foldername)
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
             f.write(
@@ -193,7 +225,7 @@ def log_resaving_file(filepath: Path):
         # print(f"File {str(filepath)} already exists.")
         path = Path(foldername, "log.txt")
         if not os.path.exists(foldername):
-            os.mkdirs(foldername)
+            os.makedirs(foldername)
         with open(path, "a", encoding="utf-8") as f:
             current_time = datetime.now().isoformat(timespec="seconds")
             f.write(
@@ -201,7 +233,7 @@ def log_resaving_file(filepath: Path):
 
 
 def already_logged(identifier: str) -> bool:
-    foldername = get_path_from_url(identifier).parent
+    foldername = get_crawled_path_from_url(identifier).parent
     path = Path(foldername, "log.txt")
     if os.path.exists(path):
         with open(path, "r") as f:

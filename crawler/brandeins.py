@@ -11,7 +11,7 @@ def crawl_site(url, base_url):
         name="span", style="color: #ff0000;"))
 
     if contains_easy_parts:
-        filepath = utl.get_path_from_url(url)
+        filepath = utl.get_crawled_path_from_url(url)
         utl.save_soup(soup, filepath)
         utl.save_header(filepath, url, filepath)
     else:
