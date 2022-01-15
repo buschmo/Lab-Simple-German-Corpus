@@ -112,7 +112,7 @@ def get_names_from_url(url: str) -> [str, str]:
 
 def get_parsed_path_from_url(url: str) -> Path:
     foldername, filename = get_names_from_url(url)
-    return Path(foldername, "parsedt", filename)
+    return Path(foldername, "parsed", filename + ".txt")
 
 
 def get_crawled_path_from_url(url: str) -> Path:
@@ -164,17 +164,34 @@ def parse_url(url, base_url):
     return url
 
 
-def parse_soup(base_url, parser: Callable[[BeautifulSoup], list[BeautifulSoup]]):
+def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
     header = load_header(base_url)
     for filename in header.keys():
         url = header[filename]["url"]
         soup = read_soup(url)
-
         parsed_content = parser(soup)
-        return
-
-        filepath = get_crawled_path_from_url(url)
-        save_soup(soup, filepath)
+        
+        path = get_parsed_path_from_url(url)
+        if not os.path.exists(path.parent):
+            os.makedirs(path.parent)
+        with open(path, "w", encoding="utf-8") as f:
+            for i, tag in enumerate(parsed_content.contents):
+                for j, sentence in enumerate(tag.get_text().split(".")):
+                    # clean up of sentences
+                    sentence = re.sub("\n", " ", sentence)
+                    sentence = re.sub(" +", " ", sentence)
+                    sentence = sentence.strip()
+                    # remove empty lines
+                    if not sentence:
+                        continue
+                    # add punctuation if necessary
+                    if not sentence[-1] in [".", ":", "?", "!"]:
+                        sentence += "."
+                    # if the sentence is only a single word, merge it with the following one
+                    if not " " in sentence:
+                        f.write(f"{sentence}")
+                    else:
+                        f.write(f"{sentence}\n")
 
 
 def filter_urls(urls: list, base_url: str) -> list:
