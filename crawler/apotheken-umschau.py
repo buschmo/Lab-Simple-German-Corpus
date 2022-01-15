@@ -61,16 +61,17 @@ def filter_func(tag) -> bool:
 
 def parser(soup: BeautifulSoup) -> BeautifulSoup:
     article_tag = soup.find_all(name="div", class_="copy")
-    if len(article_tag)>1:
+    if len(article_tag) > 1:
         print("Unaccounted case occured. More than one article found.")
         return
     article_tag = article_tag[0]
-    
+
     # get unwanted tags and remove them
-    inverse_result = article_tag.find_all(lambda x: not filter_func(x), recursive=False)
+    inverse_result = article_tag.find_all(
+        lambda x: not filter_func(x), recursive=False)
     for tag in inverse_result:
         tag.decompose()
-            
+
     return article_tag
 
 

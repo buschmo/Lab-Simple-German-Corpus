@@ -170,7 +170,7 @@ def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
         url = header[filename]["url"]
         soup = read_soup(url)
         parsed_content = parser(soup)
-        
+
         path = get_parsed_path_from_url(url)
         if not os.path.exists(path.parent):
             os.makedirs(path.parent)
