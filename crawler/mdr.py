@@ -1,6 +1,7 @@
 #!/usr/bin/python3.10
 import utilities as utl
 import re
+from bs4 import BeautifulSoup
 
 """ MDR
 There are three content pages on mdr.de
@@ -10,7 +11,7 @@ There are three content pages on mdr.de
 """
 
 
-def crawl_site(easy_urls, base_url):
+def crawl_site(easy_url, base_url):
     easy_soup = utl.read_soup(easy_url)
 
     publication_date = str(easy_soup.find(
@@ -71,7 +72,9 @@ def crawling(base_url):
          "attrs": {"class": "sectionWrapper section1er audioApp cssPageAreaWithoutContent"}
          })
 
-    crawl_site(easy_news_urls, base_url)
+    for i, easy_url in enumerate(easy_news_urls):
+        print(f"[{i+1}/{len(easy_news_urls)}] Crawling {easy_url}")
+        crawl_site(easy_url, base_url)
 
     # crawl archived articles
     archive_urls = [
@@ -90,9 +93,9 @@ def crawling(base_url):
              "attrs": {"class": string}
              })
 
-        for easy_url in easy_information_urls:
+        for i, easy_url in enumerate(easy_information_urls):
             print(f"[{i+1}/{len(easy_information_urls)}] Crawling {easy_url}")
-            crawl_site(easy_information_urls, base_url)
+            crawl_site(easy_url, base_url)
 
 
 def main():
