@@ -2,6 +2,7 @@
 import utilities as utl
 import re
 from bs4 import BeautifulSoup
+from collections.abc import Callable
 
 
 def crawl_site(easy_url, base_url):
@@ -27,14 +28,6 @@ def crawl_site(easy_url, base_url):
                                easy_soup, easy_url)
 
 
-def filter_urls(urls, base_url):
-    urls = utl.filter_urls(urls, base_url)
-    # remove download links of docs
-    urls = [url for url in urls if (
-        "index.php?menuid=" not in url) and ("/ls/" in url)]
-    return urls
-
-
 def crawling(base_url):
     home_url_easy = "https://www.apotheken-umschau.de/einfache-sprache/"
 
@@ -53,9 +46,38 @@ def crawling(base_url):
         crawl_site(easy_url, base_url)
 
 
+def filter_func(tag) -> bool:
+    if tag.name == "p":
+        if tag.has_attr("class"):
+            if "text" in tag["class"]:
+                return True
+    if tag.name == "ul":
+        if tag.parent.name == "div":
+            if tag.parent.has_attr("class"):
+                if "copy" in tag.parent["class"]:
+                    return True
+    return False
+
+
+def parser(soup: BeautifulSoup) -> BeautifulSoup:
+    article_tag = soup.find_all(name="div", class_="copy")
+    if len(article_tag)>1:
+        print("Unaccounted case occured. More than one article found.")
+        return
+    article_tag = article_tag[0]
+    
+    # get unwanted tags and remove them
+    inverse_result = article_tag.find_all(lambda x: not filter_func(x), recursive=False)
+    for tag in inverse_result:
+        tag.decompose()
+            
+    return article_tag
+
+
 def main():
     base_url = "https://www.apotheken-umschau.de/"
-    crawling(base_url)
+    # crawling(base_url)
+    utl.parse_soup(base_url, parser)
 
 
 if __name__ == '__main__':
