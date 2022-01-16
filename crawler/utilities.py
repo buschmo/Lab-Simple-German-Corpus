@@ -83,7 +83,8 @@ def save_header(filepath, url: str, matching_filepath: Path, publication_date=No
 
     # if the file was already downloaded and used, simply append to the list
     if key in header.keys():
-        header[key]["matching_files"].append(matching_filepath.name)
+        if matching_filepath.name not in header[key]["matching_files"]:
+            header[key]["matching_files"].append(matching_filepath.name)
     else:
         header[key] = {
             "url": url,
@@ -168,32 +169,35 @@ def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
     header = load_header(base_url)
     for filename in header.keys():
         url = header[filename]["url"]
+        path = get_parsed_path_from_url(url)
+        # skip already if already parsed
+        if os.path.exists(path):
+            continue
+
+        # get soup for parsing
         soup = read_soup(url)
         parsed_content = parser(soup)
         if not parsed_content:
             continue
 
-        path = get_parsed_path_from_url(url)
         if not os.path.exists(path.parent):
             os.makedirs(path.parent)
+        
         with open(path, "w", encoding="utf-8") as f:
             for i, tag in enumerate(parsed_content.contents):
-                for j, sentence in enumerate(tag.get_text().split(".")):
-                    # clean up of sentences
-                    sentence = re.sub("\n", " ", sentence)
-                    sentence = re.sub(" +", " ", sentence)
-                    sentence = sentence.strip()
-                    # remove empty lines
-                    if not sentence:
-                        continue
-                    # add punctuation if necessary
-                    if not sentence[-1] in [".", ":", "?", "!"]:
-                        sentence += "."
-                    # if the sentence is only a single word, merge it with the following one
-                    if not " " in sentence:
-                        f.write(f"{sentence}")
-                    else:
-                        f.write(f"{sentence}\n")
+                text = tag.get_text()
+                # clean up of text
+                text = re.sub("\s+", " ", text)
+                text = text.strip()
+                # # remove empty lines
+                if not text:
+                    continue
+                for j, sentence in enumerate(re.split(r"([?.:!] )", text)):
+                    # print(f"{i}-{j}#{sentence}")
+                    # Move punctuation to the correct position
+                    if sentence in [". ", ": ", "? ", "! "]:
+                        f.seek(f.tell()-1)
+                    f.write(f"{sentence}\n")
 
 
 def filter_urls(urls: list, base_url: str) -> list:
