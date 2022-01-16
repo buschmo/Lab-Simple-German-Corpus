@@ -98,9 +98,55 @@ def crawling(base_url):
             crawl_site(easy_url, base_url)
 
 
+def filter_func(tag) -> bool:
+    if tag.name == "p":
+        if tag.has_attr("class"):
+            if "text" in tag["class"] or "einleitung" in tag["class"]:
+                return True
+    elif tag.name == "span":
+        if tag.has_attr("class"):
+            if "headline" in tag["class"]:
+                if tag.parent.name =="h1":
+                    if not tag.string.endswith("."):
+                        tag.string.replace_with(str(tag.string).strip() + ".")
+                    return True
+    elif tag.name == "ul":
+        if tag.parent.name =="div" and tag.parent.has_attr("class"):
+            if "paragraph" in tag.parent["class"]:
+                return True
+    return False
+
+
+def filter_block(tag) -> bool:
+    if tag.name == "div":
+        if tag.has_attr("class"):
+            s = set(["section", "sectionDetailPage", "cssBoxContent"])
+            if s.issubset(set(tag["class"])):
+                return True
+    return False
+
+
+def parser(soup: BeautifulSoup) -> BeautifulSoup:
+    """ Parses the headline, introduction and main text
+    Omits image description and h3 type headlines as these are not present in easy german texts
+    """
+    article_tag = soup.find_all(filter_block)
+    if len(article_tag) > 1:
+        print("Unaccounted case occured. More than one article found.")
+        return
+    article_tag = article_tag[0]
+
+    content = article_tag.find_all(filter_func)
+    result = BeautifulSoup("", "html.parser")
+    for tag in content:
+        result.append(tag)
+    return result
+
+
 def main():
     base_url = "https://www.mdr.de/"
-    crawling(base_url)
+    # crawling(base_url)
+    utl.parse_soup(base_url, parser)
 
 
 if __name__ == '__main__':
