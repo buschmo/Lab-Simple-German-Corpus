@@ -1,5 +1,6 @@
 import utilities as utl
 import re
+from bs4 import BeautifulSoup
 
 
 def crawl_site(easy_url, base_url):
@@ -39,9 +40,48 @@ def crawling(base_url):
         crawl_site(easy_url, base_url)
 
 
+def filter_block(tag) -> bool:
+    if tag.name == "div":
+        if tag.has_attr("id"):
+            if "content" in tag["id"]:
+                if tag.has_attr("class"):
+                    if "content" in tag["class"]:
+                        return True
+    return False
+
+
+def filter_func(tag) -> bool:
+    if tag.name == "p":
+        return True
+    elif tag.name == "h2":
+        return True
+    elif tag.name == "ul":
+        return True
+    if tag.name == "div":
+        if tag.has_attr("class"):
+            if "abstract" in tag["class"]:
+                return True
+    return False
+
+
+def parser(soup: BeautifulSoup) -> BeautifulSoup:
+    article_tag = soup.find_all(filter_block)
+    if len(article_tag) > 1:
+        print("Unaccounted case occured. More than one article found.")
+        return
+    article_tag = article_tag[0]
+
+    content = article_tag.find_all(filter_func, recursive=False)
+    result = BeautifulSoup("", "html.parser")
+    for tag in content:
+        result.append(tag)
+    return result
+
+
 def main():
     base_url = "https://www.behindertenbeauftragter.de/"
-    crawling(base_url)
+    # crawling(base_url)
+    utl.parse_soup(base_url, parser)
 
 
 if __name__ == '__main__':
