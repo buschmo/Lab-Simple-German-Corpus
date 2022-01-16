@@ -96,10 +96,6 @@ def save_header(filepath, url: str, matching_filepath: Path, publication_date=No
         json.dump(header, f, indent=4)
 
 
-def get_headerpath_from_url(url: str) -> Path:
-    return Path(urllib.parse.urlparse(url).netloc, "header.json")
-
-
 def get_names_from_url(url: str) -> [str, str]:
     parsed_url = urllib.parse.urlparse(url)
     foldername = parsed_url.netloc
@@ -109,6 +105,16 @@ def get_names_from_url(url: str) -> [str, str]:
     if not foldername.startswith("www."):
         foldername = "www." + foldername
     return foldername, filename
+
+
+def get_headerpath_from_url(url: str) -> Path:
+    foldername, _ = get_names_from_url(url)
+    return Path(foldername, "header.json")
+
+
+def get_log_path_from_url(url: str):
+    foldername, _ = get_names_from_url(url)
+    return Path(foldername, "log.txt")
 
 
 def get_parsed_path_from_url(url: str) -> Path:
@@ -171,8 +177,8 @@ def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
         url = header[filename]["url"]
         path = get_parsed_path_from_url(url)
         # skip already if already parsed
-        if os.path.exists(path):
-            continue
+        # if os.path.exists(path):
+        #     continue
 
         # get soup for parsing
         soup = read_soup(url)
@@ -183,7 +189,7 @@ def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
 
         if not os.path.exists(path.parent):
             os.makedirs(path.parent)
-        
+
         with open(path, "w", encoding="utf-8") as f:
             for i, tag in enumerate(parsed_content.contents):
                 text = tag.get_text()
@@ -216,10 +222,6 @@ def filter_urls(urls: list, base_url: str) -> list:
             # remove already downloaded urls
             urls = [url for url in urls if url not in keys]
     return urls
-
-
-def get_log_path_from_url(url: str):
-    return Path(urllib.parse.urlparse(url).netloc, "log.txt")
 
 
 def log_missing_url(url: str):
