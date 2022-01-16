@@ -56,9 +56,46 @@ def crawling(base_url):
         crawl_site(easy_url, base_url)
 
 
+def filter_block(tag) -> bool:
+    if tag.name == "main":
+        if tag.has_attr("id") and tag.has_attr("role"):
+            if "inhalt" in tag["id"] and "main" in tag["role"]:
+                return True
+    return False
+
+
+def filter_tags(tag) -> bool:
+    if tag.parent.name == "div" and tag.parent.has_attr("class"):
+        if "accordionhead" in tag.parent["class"] or "accordionpanel" in tag.parent["class"] or "tinyblock" in tag.parent["class"]:
+            if tag.name in ["p", "h2", "h3", "ul"]:
+                return True
+    return False
+
+
+def parser(soup: BeautifulSoup) -> BeautifulSoup:
+    article_tag = soup.find_all(filter_block)
+    if len(article_tag) > 1:
+        print("Unaccounted case occured. More than one article found.")
+        return
+    elif len(article_tag) == 0:
+        print("Unaccounted case occured. No article found.")
+        return
+    article_tag = article_tag[0]
+
+    if article_tag.find(name="section", id="produktbeschreibung"):
+        article_tag = article_tag.find(name="section", id="produktbeschreibung")
+
+    content = article_tag.find_all(filter_tags)
+    result = BeautifulSoup("", "html.parser")
+    for tag in content:
+        result.append(tag)
+    return result
+
+
 def main():
     base_url = "https://www.stadt-koeln.de/"
-    crawling(base_url)
+    # crawling(base_url)
+    utl.parse_soup(base_url, parser)
 
 
 if __name__ == '__main__':
