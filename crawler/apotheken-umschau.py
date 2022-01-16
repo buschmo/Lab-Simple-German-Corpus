@@ -46,7 +46,7 @@ def crawling(base_url):
         crawl_site(easy_url, base_url)
 
 
-def filter_func(tag) -> bool:
+def filter_tags(tag) -> bool:
     if tag.name == "p":
         if tag.has_attr("class"):
             if "text" in tag["class"]:
@@ -68,7 +68,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
 
     # get unwanted tags and remove them
     inverse_result = article_tag.find_all(
-        lambda x: not filter_func(x), recursive=False)
+        lambda x: not filter_tags(x), recursive=False)
     for tag in inverse_result:
         tag.decompose()
 

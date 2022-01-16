@@ -98,7 +98,16 @@ def crawling(base_url):
             crawl_site(easy_url, base_url)
 
 
-def filter_func(tag) -> bool:
+def filter_block(tag) -> bool:
+    if tag.name == "div":
+        if tag.has_attr("class"):
+            s = set(["section", "sectionDetailPage", "cssBoxContent"])
+            if s.issubset(set(tag["class"])):
+                return True
+    return False
+
+
+def filter_tags(tag) -> bool:
     if tag.name == "p":
         if tag.has_attr("class"):
             if "text" in tag["class"] or "einleitung" in tag["class"]:
@@ -106,22 +115,13 @@ def filter_func(tag) -> bool:
     elif tag.name == "span":
         if tag.has_attr("class"):
             if "headline" in tag["class"]:
-                if tag.parent.name =="h1":
+                if tag.parent.name == "h1":
                     if not tag.string.endswith("."):
                         tag.string.replace_with(str(tag.string).strip() + ".")
                     return True
     elif tag.name == "ul":
-        if tag.parent.name =="div" and tag.parent.has_attr("class"):
+        if tag.parent.name == "div" and tag.parent.has_attr("class"):
             if "paragraph" in tag.parent["class"]:
-                return True
-    return False
-
-
-def filter_block(tag) -> bool:
-    if tag.name == "div":
-        if tag.has_attr("class"):
-            s = set(["section", "sectionDetailPage", "cssBoxContent"])
-            if s.issubset(set(tag["class"])):
                 return True
     return False
 
@@ -136,7 +136,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
         return
     article_tag = article_tag[0]
 
-    content = article_tag.find_all(filter_func)
+    content = article_tag.find_all(filter_tags)
     result = BeautifulSoup("", "html.parser")
     for tag in content:
         result.append(tag)

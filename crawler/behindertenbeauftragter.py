@@ -50,7 +50,7 @@ def filter_block(tag) -> bool:
     return False
 
 
-def filter_func(tag) -> bool:
+def filter_tags(tag) -> bool:
     if tag.name == "p":
         return True
     elif tag.name == "h2":
@@ -71,7 +71,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
         return
     article_tag = article_tag[0]
 
-    content = article_tag.find_all(filter_func, recursive=False)
+    content = article_tag.find_all(filter_tags, recursive=False)
     result = BeautifulSoup("", "html.parser")
     for tag in content:
         result.append(tag)
