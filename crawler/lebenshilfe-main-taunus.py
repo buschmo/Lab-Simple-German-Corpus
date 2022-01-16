@@ -1,6 +1,7 @@
 #!/usr/bin/python3.10
 import utilities as utl
 import re
+from bs4 import BeautifulSoup
 
 """ Lebenshilfe Main Taunus
 Ignore /dokument/
@@ -75,9 +76,50 @@ def crawling(base_url):
     crawl_site(home_url_easy, base_url)
 
 
+def filter_block(tag) -> bool:
+    if tag.name == "div":
+        if tag.has_attr("class"):
+            if "artikel_details" in tag["class"]:
+                return True
+    return False
+
+
+def filter_tags(tag) -> bool:
+    if tag.parent.has_attr("class"):
+        if "inhalt" in tag.parent["class"]:
+            if tag.name == "p":
+                return True
+            elif tag.name == "ul":
+                if "paragraph" in tag.parent["class"]:
+                    return True
+            elif tag.name == "div":
+                if tag.has_attr("class"):
+                    if "box_big" in tag["class"]:
+                        return True
+    return False
+
+
+def parser(soup: BeautifulSoup) -> BeautifulSoup:
+    article_tag = soup.find_all(filter_block)
+    if len(article_tag) > 1:
+        print("Unaccounted case occured. More than one article found.")
+        return
+    elif len(article_tag)==0:
+        print("Unaccounted case occured. No article found.")
+        return
+    article_tag = article_tag[0]
+
+    content = article_tag.find_all(filter_tags)
+    result = BeautifulSoup("", "html.parser")
+    for tag in content:
+        result.append(tag)
+    return result
+
+
 def main():
     base_url = "https://www.lebenshilfe-main-taunus.de/"
-    crawling(base_url)
+    # crawling(base_url)
+    utl.parse_soup(base_url, parser)
 
 
 if __name__ == '__main__':

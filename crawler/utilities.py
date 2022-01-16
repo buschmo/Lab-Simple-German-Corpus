@@ -178,6 +178,7 @@ def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
         soup = read_soup(url)
         parsed_content = parser(soup)
         if not parsed_content:
+            print(f"No content for {url}.")
             continue
 
         if not os.path.exists(path.parent):
