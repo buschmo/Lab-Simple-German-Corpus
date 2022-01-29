@@ -38,11 +38,11 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
 
     save_soup(normal_soup, normal_filepath)
     save_header(normal_filepath, normal_url,
-                easy_filepath, publication_date)
+                easy_filepath, False, publication_date)
 
     save_soup(easy_soup, easy_filepath)
     save_header(easy_filepath, easy_url,
-                easy_filepath, publication_date)
+                easy_filepath, True, publication_date)
 
 
 def save_soup(soup, filepath: Path):
@@ -67,7 +67,7 @@ def load_header(url):
     return header
 
 
-def save_header(filepath, url: str, matching_filepath: Path, publication_date=None):
+def save_header(filepath, url: str, matching_filepath: Path, bool_easy: bool=False, publication_date=None):
     key = filepath.name
     headerpath = get_headerpath_from_url(url)
 
@@ -89,6 +89,7 @@ def save_header(filepath, url: str, matching_filepath: Path, publication_date=No
         header[key] = {
             "url": url,
             "crawl_date": str(date.today()),
+            "easy": bool_easy,
             "publication_date": publication_date,
             "matching_files": [matching_filepath.name]
         }
@@ -184,7 +185,7 @@ def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
         soup = read_soup(url)
         parsed_content = parser(soup)
         if not parsed_content:
-            print(f"No content for {url}.")
+            print(f"Unclear content for {url}.")
             continue
 
         if not os.path.exists(path.parent):
