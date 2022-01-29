@@ -42,7 +42,7 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
 
     save_soup(easy_soup, easy_filepath)
     save_header(easy_filepath, easy_url,
-                easy_filepath, True, publication_date)
+                normal_filepath, True, publication_date)
 
 
 def save_soup(soup, filepath: Path):
@@ -67,7 +67,7 @@ def load_header(url):
     return header
 
 
-def save_header(filepath, url: str, matching_filepath: Path, bool_easy: bool=False, publication_date=None):
+def save_header(filepath, url: str, matching_filepath: Path, bool_easy: bool = False, publication_date=None):
     key = filepath.name
     headerpath = get_headerpath_from_url(url)
 
@@ -212,7 +212,7 @@ def filter_urls(urls: list, base_url: str) -> list:
     """ Removes urls that have already been crawled
     """
     file_path = get_crawled_path_from_url(urls[0])
-    header_path = get_headerpath_from_url(url)
+    header_path = get_headerpath_from_url(urls[0])
 
     # remove urls leaving the website
     urls = [url for url in urls if base_url in url]
@@ -221,7 +221,8 @@ def filter_urls(urls: list, base_url: str) -> list:
             header = json.load(f)
             keys = header.keys()
             # remove already downloaded urls
-            urls = [url for url in urls if url not in keys]
+            urls = [url for url in urls if get_crawled_path_from_url(
+                url).name not in keys]
     return urls
 
 
