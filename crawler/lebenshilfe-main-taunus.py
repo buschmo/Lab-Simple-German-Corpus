@@ -71,8 +71,6 @@ def filter_urls(urls, base_url):
 def crawling(base_url):
     home_url_easy = "https://www.lebenshilfe-main-taunus.de/ls/"
 
-    print("### Remember to ignore /dokument/ ###")
-
     crawl_site(home_url_easy, base_url)
 
 
@@ -104,7 +102,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
     if len(article_tag) > 1:
         print("Unaccounted case occured. More than one article found.")
         return
-    elif len(article_tag)==0:
+    elif len(article_tag) == 0:
         print("Unaccounted case occured. No article found.")
         return
     article_tag = article_tag[0]
@@ -118,7 +116,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
 
 def main():
     base_url = "https://www.lebenshilfe-main-taunus.de/"
-    # crawling(base_url)
+    crawling(base_url)
     utl.parse_soup(base_url, parser)
 
 
