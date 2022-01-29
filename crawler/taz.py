@@ -84,7 +84,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
 def main():
     base_url = "https://taz.de/"
     # crawling(base_url)
-    utl.parse_soup(base_url, parser)
+    utl.parse_soups(base_url, parser)
 
 
 if __name__ == '__main__':

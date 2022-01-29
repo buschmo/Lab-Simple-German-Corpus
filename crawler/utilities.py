@@ -172,7 +172,7 @@ def parse_url(url, base_url):
     return url
 
 
-def parse_soup(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
+def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
     header = load_header(base_url)
     for filename in header.keys():
         url = header[filename]["url"]
