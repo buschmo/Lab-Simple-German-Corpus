@@ -202,7 +202,7 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
                     continue
                 for j, sentence in enumerate(re.split(r"([?.:!] )", text)):
                     # print(f"{i}-{j}#{sentence}")
-                    # Move punctuation to the correct position
+                    # Move punctuation to the correct position, i.e. the previous line
                     if sentence in [". ", ": ", "? ", "! "]:
                         f.seek(f.tell()-1)
                     f.write(f"{sentence}\n")
