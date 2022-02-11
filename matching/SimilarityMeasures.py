@@ -4,6 +4,7 @@ import numpy as np
 import spacy
 import spacy.tokens.span
 import matplotlib.pyplot as plt
+import scipy.optimize
 
 
 def n_gram_similarity(sentence1, sentence2, tf1, tf2, idf, n=3):
@@ -138,6 +139,29 @@ def max_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.sp
     return (sts1 + sts2) / 2
 
 
+def hungarian_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.span.Span):
+    """
+    Calculates the similarity by calculating a maximum weight matching using the Hungarian algorithm.
+    A scipy function is used for the actual calculation on the matrix of word similarities.
+
+    Args:
+        sentence1: First sentence
+        sentence2: Second sentence
+
+    Returns:
+        A similarity measure, most likely between 0 and 1.
+    """
+    sim_matrix = np.zeros(shape=(len(sentence1), len(sentence2)))
+
+    for i, word1 in enumerate(sentence1):
+        for j, word2 in enumerate(sentence2):
+            sim_matrix[i, j] = word1.similarity(word2)
+
+    row_ind, col_ind = scipy.optimize.linear_sum_assignment(sim_matrix, maximize=True)
+
+    return (1.0 / min(len(sentence1), len(sentence2))) * sim_matrix[row_ind, col_ind].sum()
+
+
 def CWASA_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.span.Span):
     """
     Calculates the CWASA similarity
@@ -191,91 +215,85 @@ if __name__ == '__main__':
 
     nlp = spacy.load('de_core_news_lg')
 
-    # doc1 = nlp("Warum ist die Banane krumm? Weil niemand in den Urwald zog und die Banane gerade bog. ")
-    # doc2 = nlp("Was hat dafür gesorgt, dass die Banane krumm wurde? Keiner besuchte den Regenwald, um die Frucht zu "
-    #            "begradigen.")
+    doc1 = nlp("Warum ist die Banane krumm? Weil niemand in den Urwald zog und die Banane gerade bog. ")
+    doc2 = nlp("Was hat dafür gesorgt, dass die Banane krumm wurde? Keiner besuchte den Regenwald, um die Frucht zu "
+               "begradigen.")
+
+    for sent in doc1.sents:
+        for sent2 in doc2.sents:
+            print(sent)
+            print(sent2)
+            print("CWASA:", CWASA_similarity(sent, sent2))
+            print("avg:", average_similarity(sent, sent2))
+            print("cos:", cosine_similarity(sent, sent2))
+            print("max:", max_similarity(sent, sent2))
+            print("Hungarian", hungarian_similarity(sent, sent2))
+
+    # n = 4
     #
-    # tf1 = util.calculate_n_gram_tf(doc1.text, n=3)
-    # tf2 = util.calculate_n_gram_tf(doc2.text, n=3)
-    # idf = util.calculate_full_n_gram_idf_from_texts([doc1.text, doc2.text, "Wer hat die Kuckucksuhr geklaut?",
-    #                                                  "Die Affen tanzen durch en Wald",
-    #                                                  "Wer nicht wagt der nicht gewinnt"], n=3)
+    # article_pairs = util.get_article_pairs()
     #
-    # for sent in doc1.sents:
-    #     for sent2 in doc2.sents:
-    #         print(sent)
-    #         print(sent2)
-    #         print("CWASA:", CWASA_similarity(sent, sent2))
-    #         print("avg:", average_similarity(sent, sent2))
-    #         print("cos:", cosine_similarity(sent, sent2))
-    #         print("max:", max_similarity(sent, sent2))
-    #         print("n_gram:", n_gram_similarity(sent, sent2, tf1, tf2, idf, n=3))
-
-    n = 4
-
-    article_pairs = util.get_article_pairs()
-
-    all_articles = util.get_unnested_articles()
-
-    idf = util.calculate_full_n_gram_idf(all_articles, n, lowercase=True)
-
-    word_idf = util.calculate_full_word_idf(all_articles, lowercase=True)
-
-    cwasa_sims = []
-    avg_sims = []
-    cos_sims = []
-    max_sims = []
-    n_gram_sims = []
-    word_tf_idf_sims = []
-
-    for nr, (art1, art2) in enumerate(article_pairs):
-
-        # art2 = article_pairs[nr + 55 % len(article_pairs)][1]
-
-        try:
-            with open(art1, 'r') as fp:
-                text1 = fp.read()
-            with open(art2, 'r') as fp:
-                text2 = fp.read()
-        except FileNotFoundError:
-            continue
-
-        kwargs = {'remove_hyphens': True, 'lowercase': False, 'remove_gender': True, 'lemmatization': False,
-                  'spacy_sentences': True, 'remove_stopwords': False, 'remove_punctuation': True}
-
-        kwargs_ngram = {'remove_hyphens': True, 'lowercase': True, 'remove_gender': True, 'lemmatization': False,
-                        'spacy_sentences': True, 'remove_stopwords': False, 'remove_punctuation': True}
-
-        pre1_v1 = util.preprocess(text1, **kwargs)
-        pre2_v1 = util.preprocess(text2, **kwargs)
-        pre1_v2_n_gram = util.preprocess(text1, **kwargs_ngram)
-        pre2_v2_n_gram = util.preprocess(text2, **kwargs_ngram)
-
-        tf1 = util.calculate_n_gram_tf(pre1_v2_n_gram, n)
-        tf2 = util.calculate_n_gram_tf(pre2_v2_n_gram, n)
-
-        tf_word1 = util.calculate_word_tf(pre1_v2_n_gram)
-
-        tf_word2 = util.calculate_word_tf(pre2_v2_n_gram)
-
-        for i, sent1 in enumerate(pre1_v1):
-            for j, sent2 in enumerate(pre2_v1):
-                if j < i:
-                    continue
-                cwasa_sims.append(CWASA_similarity(sent1, sent2))
-                avg_sims.append(average_similarity(sent1, sent2))
-                cos_sims.append(cosine_similarity(sent1, sent2))
-                max_sims.append(max_similarity(sent1, sent2))
-
-        for i, sent1 in enumerate(pre1_v2_n_gram):
-            for j, sent2 in enumerate(pre2_v2_n_gram):
-                if j < i:
-                    continue
-                n_gram_sims.append(n_gram_similarity(sent1, sent2, tf1, tf2, idf, n))
-                word_tf_idf_sims.append(bag_of_words_tf_idf_similarity(sent1, sent2, tf_word1, tf_word2, word_idf))
-
-        if len(word_tf_idf_sims) > 5000:
-            break
+    # all_articles = util.get_unnested_articles()
+    #
+    # idf = util.calculate_full_n_gram_idf(all_articles, n, lowercase=True)
+    #
+    # word_idf = util.calculate_full_word_idf(all_articles, lowercase=True)
+    #
+    # cwasa_sims = []
+    # avg_sims = []
+    # cos_sims = []
+    # max_sims = []
+    # n_gram_sims = []
+    # word_tf_idf_sims = []
+    #
+    # for nr, (art1, art2) in enumerate(article_pairs):
+    #
+    #     # art2 = article_pairs[nr + 55 % len(article_pairs)][1]
+    #
+    #     try:
+    #         with open(art1, 'r') as fp:
+    #             text1 = fp.read()
+    #         with open(art2, 'r') as fp:
+    #             text2 = fp.read()
+    #     except FileNotFoundError:
+    #         continue
+    #
+    #     kwargs = {'remove_hyphens': True, 'lowercase': False, 'remove_gender': True, 'lemmatization': False,
+    #               'spacy_sentences': True, 'remove_stopwords': False, 'remove_punctuation': True}
+    #
+    #     kwargs_ngram = {'remove_hyphens': True, 'lowercase': True, 'remove_gender': True, 'lemmatization': False,
+    #                     'spacy_sentences': True, 'remove_stopwords': False, 'remove_punctuation': True}
+    #
+    #     pre1_v1 = util.preprocess(text1, **kwargs)
+    #     pre2_v1 = util.preprocess(text2, **kwargs)
+    #     pre1_v2_n_gram = util.preprocess(text1, **kwargs_ngram)
+    #     pre2_v2_n_gram = util.preprocess(text2, **kwargs_ngram)
+    #
+    #     tf1 = util.calculate_n_gram_tf(pre1_v2_n_gram, n)
+    #     tf2 = util.calculate_n_gram_tf(pre2_v2_n_gram, n)
+    #
+    #     tf_word1 = util.calculate_word_tf(pre1_v2_n_gram)
+    #
+    #     tf_word2 = util.calculate_word_tf(pre2_v2_n_gram)
+    #
+    #     for i, sent1 in enumerate(pre1_v1):
+    #         for j, sent2 in enumerate(pre2_v1):
+    #             if j < i:
+    #                 continue
+    #             cwasa_sims.append(CWASA_similarity(sent1, sent2))
+    #             avg_sims.append(average_similarity(sent1, sent2))
+    #             cos_sims.append(cosine_similarity(sent1, sent2))
+    #             max_sims.append(max_similarity(sent1, sent2))
+    #
+    #     for i, sent1 in enumerate(pre1_v2_n_gram):
+    #         for j, sent2 in enumerate(pre2_v2_n_gram):
+    #             if j < i:
+    #                 continue
+    #             n_gram_sims.append(n_gram_similarity(sent1, sent2, tf1, tf2, idf, n))
+    #             word_tf_idf_sims.append(bag_of_words_tf_idf_similarity(sent1, sent2, tf_word1, tf_word2, word_idf))
+    #
+    #     if len(word_tf_idf_sims) > 5000:
+    #         break
 
     # print("CWASA", cwasa_sims[:100])
     # print("AVG", avg_sims[:100])
@@ -284,101 +302,101 @@ if __name__ == '__main__':
     # print("N-GRAM", n_gram_sims[:100])
     # print("N-GRAM", word_tf_idf_sims[:100])
 
-    plt.hist(cwasa_sims, 50)
-    plt.yscale('log')
-    plt.title("CWASA DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cwasa_sims)}')
-    plt.savefig("../figures/CWASA_distance_log.png")
-    plt.show()
-
-    plt.hist(avg_sims, 50)
-    plt.yscale('log')
-    plt.title("AVERAGE DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(avg_sims)}')
-    plt.savefig("../figures/avg_sim_distance_log.png")
-    plt.show()
-
-    plt.hist(cos_sims, 50)
-    plt.yscale('log')
-    plt.title("COSINE DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cos_sims)}')
-    plt.savefig("../figures/cos_sim_distance_log.png")
-    plt.show()
-
-    plt.hist(max_sims, 50)
-    plt.yscale('log')
-    plt.title("MAX DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(max_sims)}')
-    plt.savefig("../figures/max_sim_distance_log.png")
-    plt.show()
-
-    plt.hist(n_gram_sims, 50)
-    plt.yscale('log')
-    plt.title("N-GRAM DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(n_gram_sims)}')
-    plt.savefig("../figures/n_gram_distance_log.png")
-    plt.show()
-
-    plt.hist(word_tf_idf_sims, 50)
-    plt.yscale('log')
-    plt.title("WORD-TF-IDF DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims)}')
-    plt.savefig("../figures/bag_of_words_distance_log.png")
-    plt.show()
-
-
-    ############## non-log images
-
-    plt.hist(cwasa_sims, 50)
+    # plt.hist(cwasa_sims, 50)
     # plt.yscale('log')
-    plt.title("CWASA DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cwasa_sims)}')
-    plt.savefig("../figures/CWASA_distance.png")
-    plt.show()
-
-    plt.hist(avg_sims, 50)
+    # plt.title("CWASA DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(cwasa_sims)}')
+    # plt.savefig("../figures/CWASA_distance_log.png")
+    # plt.show()
+    #
+    # plt.hist(avg_sims, 50)
     # plt.yscale('log')
-    plt.title("AVERAGE DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(avg_sims)}')
-    plt.savefig("../figures/avg_sim_distance.png")
-    plt.show()
-
-    plt.hist(cos_sims, 50)
+    # plt.title("AVERAGE DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(avg_sims)}')
+    # plt.savefig("../figures/avg_sim_distance_log.png")
+    # plt.show()
+    #
+    # plt.hist(cos_sims, 50)
     # plt.yscale('log')
-    plt.title("COSINE DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cos_sims)}')
-    plt.savefig("../figures/cos_sim_distance.png")
-    plt.show()
-
-    plt.hist(max_sims, 50)
+    # plt.title("COSINE DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(cos_sims)}')
+    # plt.savefig("../figures/cos_sim_distance_log.png")
+    # plt.show()
+    #
+    # plt.hist(max_sims, 50)
     # plt.yscale('log')
-    plt.title("MAX DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(max_sims)}')
-    plt.savefig("../figures/max_sim_distance.png")
-    plt.show()
-
-    plt.hist(n_gram_sims, 50)
+    # plt.title("MAX DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(max_sims)}')
+    # plt.savefig("../figures/max_sim_distance_log.png")
+    # plt.show()
+    #
+    # plt.hist(n_gram_sims, 50)
     # plt.yscale('log')
-    plt.title("N-GRAM DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(n_gram_sims)}')
-    plt.savefig("../figures/n_gram_distance.png")
-    plt.show()
-
-    plt.hist(word_tf_idf_sims, 50)
+    # plt.title("N-GRAM DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(n_gram_sims)}')
+    # plt.savefig("../figures/n_gram_distance_log.png")
+    # plt.show()
+    #
+    # plt.hist(word_tf_idf_sims, 50)
     # plt.yscale('log')
-    plt.title("WORD-TF-IDF DISTANCE")
-    plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims)}')
-    plt.savefig("../figures/bag_of_words_distance.png")
-    plt.show()
+    # plt.title("WORD-TF-IDF DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims)}')
+    # plt.savefig("../figures/bag_of_words_distance_log.png")
+    # plt.show()
+    #
+    #
+    # ############## non-log images
+    #
+    # plt.hist(cwasa_sims, 50)
+    # # plt.yscale('log')
+    # plt.title("CWASA DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(cwasa_sims)}')
+    # plt.savefig("../figures/CWASA_distance.png")
+    # plt.show()
+    #
+    # plt.hist(avg_sims, 50)
+    # # plt.yscale('log')
+    # plt.title("AVERAGE DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(avg_sims)}')
+    # plt.savefig("../figures/avg_sim_distance.png")
+    # plt.show()
+    #
+    # plt.hist(cos_sims, 50)
+    # # plt.yscale('log')
+    # plt.title("COSINE DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(cos_sims)}')
+    # plt.savefig("../figures/cos_sim_distance.png")
+    # plt.show()
+    #
+    # plt.hist(max_sims, 50)
+    # # plt.yscale('log')
+    # plt.title("MAX DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(max_sims)}')
+    # plt.savefig("../figures/max_sim_distance.png")
+    # plt.show()
+    #
+    # plt.hist(n_gram_sims, 50)
+    # # plt.yscale('log')
+    # plt.title("N-GRAM DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(n_gram_sims)}')
+    # plt.savefig("../figures/n_gram_distance.png")
+    # plt.show()
+    #
+    # plt.hist(word_tf_idf_sims, 50)
+    # # plt.yscale('log')
+    # plt.title("WORD-TF-IDF DISTANCE")
+    # plt.xlabel('distance')
+    # plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims)}')
+    # plt.savefig("../figures/bag_of_words_distance.png")
+    # plt.show()
