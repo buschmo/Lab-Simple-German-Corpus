@@ -382,6 +382,23 @@ def weighted(elem, tf, idf) -> float:
 def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
                spacy_sentences=True,
                remove_stopwords=False, remove_punctuation=False):
+    """
+    Helper function that creates a dictionary that can be given as **kwargs argument to preprocessing, idf and other functions.
+    Contains all the possible settings for preprocessing.
+    Can be used as follows: kwargs=make_preprocessing_dict(); preprocess(text, **kwargs)
+
+    Args:
+        remove_hyphens: if true, removes hyphens of the form '-[A-Z]' (often found in Simple German) from the text
+        lowercase: lowercases the article
+        remove_gender: removes German gendering endings like *in or *innen
+        lemmatization: lemmatizes the text
+        spacy_sentences: removes the paragraphs from the text and thereby forces spacy to determine sentence borders
+        remove_stopwords: removes stopwords for German as defined internally by spacy
+        remove_punctuation: Removes punctuation marks
+
+    Returns:
+        Dictionary with the settings
+    """
     return {'remove_hyphens': remove_hyphens, 'lowercase': lowercase, 'remove_gender': remove_gender,
             'lemmatization': lemmatization, 'spacy_sentences': spacy_sentences,
             'remove_stopwords': remove_stopwords, 'remove_punctuation': remove_punctuation}
