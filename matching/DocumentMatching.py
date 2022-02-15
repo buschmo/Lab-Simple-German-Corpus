@@ -5,6 +5,8 @@ import matching.SimilarityMeasures as measures
 # TODO: Add possibility to link original sentences to preprocessed ones!
 def match_documents_max(simple_doc, normal_doc, match_matrix, threshold=0.0, sd_threshold=0.0):
     """
+    Calculates maximum matches for each simple sentence and returns the list of matched sentences.
+    Please note that this only allows 1-to-n-matching. Taken from CATS
 
     Args:
         simple_doc: The simple document in preprocessed format
@@ -22,11 +24,95 @@ def match_documents_max(simple_doc, normal_doc, match_matrix, threshold=0.0, sd_
         mean = np.mean(match_matrix)
         threshold = mean + (sd_threshold * std)
 
-        print(threshold)
-
     max_values = np.argmax(match_matrix, axis=1)
 
-    return [(simple_doc[i], normal_doc[j]) for i, j in enumerate(max_values) if match_matrix[i, j] > threshold]
+    return [[(i, j), (simple_doc[i], normal_doc[j])] for i, j in enumerate(max_values) if
+            match_matrix[i, j] > threshold]
+
+
+def match_documents_max_increasing_subsequence(simple_doc, normal_doc, match_matrix, threshold=0.0, sd_threshold=0.0):
+    """
+    Calculates maximum matches for each simple sentence, then returns the longest increasing subsequence
+    (assumes order of information is kept)
+    Please note that this only allows 1-to-n-matching. Taken from CATS
+
+    Args:
+        simple_doc: The simple document in preprocessed format
+        normal_doc: The normal document in preprocessed format
+        match_matrix: A matrix with similarity scores for the sentences in the documents
+        threshold: Minimum matching threshold, is different for different kinds of matching algorithms.
+        sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std)
+
+    Returns:
+        A list of matched sentences
+    """
+
+    if sd_threshold > 0.0:
+        std = np.std(match_matrix)
+        mean = np.mean(match_matrix)
+        threshold = mean + (sd_threshold * std)
+
+    simple_matchings = match_documents_max(simple_doc, normal_doc, match_matrix, threshold, sd_threshold)
+
+    simple_indices = [match[0][0] for match in simple_matchings]
+    normal_indices = [match[0][1] for match in simple_matchings]
+
+    simple_longest_indices, normal_longest_indices = get_longest_increasing_subsequence(simple_matchings)
+
+    final_matching = []
+
+    start_border = 0
+    end_border = normal_longest_indices[0]
+    last_found = -1
+
+    for i, elem in enumerate(simple_indices):
+        if elem in simple_longest_indices:
+            assert match_matrix[elem][normal_indices[i]] > threshold
+            final_matching.append((elem, normal_indices[i]))
+            last_found += 1
+            start_border = normal_longest_indices[last_found]
+            if last_found < len(normal_longest_indices) - 1:
+                end_border = normal_longest_indices[last_found + 1]
+            else:
+                end_border = len(match_matrix[0]) - 1
+        else:
+            max_val_ind = np.argmax(match_matrix[i][start_border:end_border + 1])
+            val = match_matrix[i][start_border + max_val_ind]
+            if val > threshold:
+                final_matching.append((elem, start_border + max_val_ind))
+                start_border += max_val_ind
+
+    return [[(i, j), (simple_doc[i], normal_doc[j])] for i, j in final_matching if
+            match_matrix[i, j] > threshold]
+
+
+def get_longest_increasing_subsequence(simple_matchings):
+    simple_indices = [match[0][0] for match in simple_matchings]
+    normal_indices = [match[0][1] for match in simple_matchings]
+
+    lis = [1] * len(normal_indices)
+
+    for i in range(1, len(normal_indices)):
+        for j in range(0, i):
+            if normal_indices[i] >= normal_indices[j] and lis[i] < lis[j] + 1:
+                lis[i] = lis[j] + 1
+
+    start = np.argmax(lis)
+
+    simple_ind_subseq = []
+    subseq = []
+
+    val = normal_indices[start]
+    current_lis = lis[start] + 1
+
+    for i in range(start, -1, -1):
+        if normal_indices[i] <= val and lis[i] == current_lis - 1:
+            subseq.insert(0, normal_indices[i])
+            simple_ind_subseq.insert(0, simple_indices[i])
+            val = normal_indices[i]
+            current_lis = lis[i]
+
+    return simple_ind_subseq, subseq
 
 
 def calculate_similarity_matrix(simple_doc, normal_doc, similarity_measure, n=4, tf1=None, tf2=None,

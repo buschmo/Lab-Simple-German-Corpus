@@ -11,6 +11,8 @@ if __name__ == '__main__':
 
     for i, (art1, art2) in enumerate(articles):
 
+        print(art1, art2)
+
         try:
             with open(art1, 'r') as fp:
                 text1 = fp.read()
@@ -26,11 +28,11 @@ if __name__ == '__main__':
         print("(Simple) Text 1\n\n", prep_text1)
         print("(Normal) Text 2\n\n", prep_text2)
 
-        sim_matrix = calculate_similarity_matrix(prep_text1, prep_text2, 'max_matching')
+        sim_matrix = calculate_similarity_matrix(prep_text1, prep_text2, 'maximum')
 
         print(sim_matrix)
 
-        print(match_documents_max(prep_text1, prep_text2, match_matrix=sim_matrix, sd_threshold=1.0))
+        print(match_documents_max_increasing_subsequence(prep_text1, prep_text2, match_matrix=sim_matrix, sd_threshold=1.5))
 
         if i > 5:
             break
