@@ -94,14 +94,15 @@ def _kill_binnenI(matchobj):
     return matchobj.group(0)[0]
 
 
-def get_unnested_articles() -> set:
+def get_unnested_articles(art_pairs = None) -> set:
     """
     Uses the function get_article_pairs to get all articles, then calculates the complete set of articles
 
     Returns:
         Set of all articles
     """
-    art_pairs = get_article_pairs()
+    if art_pairs == None:
+        art_pairs = get_article_pairs()
 
     article_set = set()
 
@@ -110,6 +111,28 @@ def get_unnested_articles() -> set:
         article_set.add(art1)
 
     return article_set
+
+
+def get_exemplary_article_pairs(root_dir=dataset_location) -> list:
+    """
+        Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory, one per source
+
+        Args:
+            root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in exemplary_header.json files
+        """
+    parallel_list = []
+    for root, dirs, files in os.walk(root_dir):
+        for name in files:
+            if name == 'exemplary_header.json':
+                with open(os.path.join(root, name), 'r') as fp:
+                    data = json.load(fp)
+
+                for fname in data:
+                    for parallel_article in data[fname]['matching_files']:
+                        parallel_list.append((os.path.join(root, fname + '.txt'),
+                                              os.path.join(root, parallel_article + '.txt')))
+
+    return parallel_list
 
 
 def get_article_pairs(root_dir=dataset_location) -> list:
@@ -181,7 +204,8 @@ def calculate_full_n_gram_idf(articles, n=3, **kwargs) -> dict:
 
     if article_count == 0:
         return dict()
-    return {k: np.log(article_count / (1 + v)) for k, v in idf_dict.items()}
+    # Usually, this is calculated as log(count/(v+1)), but as we know that v>0, we can leave out the +1
+    return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
 def calculate_full_n_gram_idf_from_texts(text_list, n=3, **kwargs):
@@ -264,7 +288,7 @@ def calculate_full_word_idf(articles, **kwargs):
 
     if article_count == 0:
         return dict()
-    return {k: np.log(article_count / (1 + v)) for k, v in idf_dict.items()}
+    return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
 def calculate_n_gram_tf_from_article(article, n=3, **kwargs):
@@ -377,6 +401,31 @@ def weighted(elem, tf, idf) -> float:
     if str_elem not in idf:
         return 0.0
     return tf[str_elem] * idf[str_elem]
+
+
+def article_generator(matched_article_list, *preprocessing_options):
+    """
+    Generator function that iteratively returns preprocessed articles.
+
+    Args:
+        matched_article_list: List of article pairs that is iterated through
+        *preprocessing_options: 1 or many preprocessing options.
+
+    Returns:
+        Preprocessed articles in the form simple_preprocessed(option_1), (..., simple_preprocessed(option_n)), normal_preprocessed(option_1), (..., normal_preprocessed(option_n))
+    """
+    for simple, normal in matched_article_list:
+        simple_arts = []
+        normal_arts = []
+        for kwargs in preprocessing_options:
+            with open(simple, 'r') as fp:
+                simple_text = fp.read()
+            simple_arts.append(preprocess(simple_text, **kwargs))
+            with open(normal, 'r') as fp:
+                normal_text = fp.read()
+            normal_arts.append(preprocess(normal_text, **kwargs))
+
+        yield *simple_arts, *normal_arts
 
 
 def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,

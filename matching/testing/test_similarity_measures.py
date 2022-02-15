@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     article_pairs = util.get_article_pairs()
 
-    all_articles = util.get_unnested_articles()
+    all_articles = util.get_unnested_articles(article_pairs)
 
     idf = util.calculate_full_n_gram_idf(all_articles, n, lowercase=True)
 
