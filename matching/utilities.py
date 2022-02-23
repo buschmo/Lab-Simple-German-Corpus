@@ -4,17 +4,19 @@ import re
 import numpy as np
 import os
 import json
+import defaultvalues
 
 nlp = spacy.load('de_core_news_lg')
 
-dataset_location = "/home/malte/Documents/Master/WS2022/Lab/Datasets"
+dataset_location = defaultvalues.dataset_location
 
 stopwords = nlp.Defaults.stop_words
 
 
-def preprocess(text: str, remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
-               spacy_sentences=True,
-               remove_stopwords=False, remove_punctuation=False):
+def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, remove_gender: bool = True,
+               lemmatization: bool = False, spacy_sentences: bool = True, remove_stopwords: bool = False,
+               remove_punctuation: bool = False) \
+        -> list[str]:
     """
     Preprocesses a string according to parameters that can be set by the user.
 
@@ -53,7 +55,8 @@ def preprocess(text: str, remove_hyphens=True, lowercase=True, remove_gender=Tru
 
     if remove_stopwords:
         nlp_text = nlp(text)
-        text = ' '.join([word.text for word in nlp_text if word.text not in stopwords])
+        text = ' '.join(
+            [word.text for word in nlp_text if word.text not in stopwords])
 
     text = re.sub(' +', ' ', text)
 
@@ -63,12 +66,13 @@ def preprocess(text: str, remove_hyphens=True, lowercase=True, remove_gender=Tru
         sent_list = [nlp(sent) for sent in text.split('\n')]
 
     if remove_punctuation:
-        sent_list = [nlp(' '.join([str(token) for token in sent if not token.is_punct])) for sent in sent_list]
+        sent_list = [nlp(' '.join(
+            [str(token) for token in sent if not token.is_punct])) for sent in sent_list]
 
     return sent_list
 
 
-def _kill_hyphen(matchobj):
+def _kill_hyphen(matchobj) -> str:
     """
     Helper function to remove hyphens
 
@@ -81,7 +85,7 @@ def _kill_hyphen(matchobj):
     return matchobj.group(0)[1].lower()
 
 
-def _kill_binnenI(matchobj):
+def _kill_binnenI(matchobj) -> str:
     """
         Helper function to remove the German Binnen-I (PilotInnen)
 
@@ -94,7 +98,7 @@ def _kill_binnenI(matchobj):
     return matchobj.group(0)[0]
 
 
-def get_unnested_articles(art_pairs = None) -> set:
+def get_unnested_articles(art_pairs=None) -> set[str]:
     """
     Uses the function get_article_pairs to get all articles, then calculates the complete set of articles
 
@@ -113,7 +117,7 @@ def get_unnested_articles(art_pairs = None) -> set:
     return article_set
 
 
-def get_exemplary_article_pairs(root_dir=dataset_location) -> list:
+def get_exemplary_article_pairs(root_dir: str = dataset_location) -> list[tuple[str, str]]:
     """
         Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory, one per source
 
@@ -135,7 +139,7 @@ def get_exemplary_article_pairs(root_dir=dataset_location) -> list:
     return parallel_list
 
 
-def get_article_pairs(root_dir=dataset_location) -> list:
+def get_article_pairs(root_dir: str = dataset_location) -> list:
     """
     Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory
 
@@ -163,7 +167,7 @@ def get_article_pairs(root_dir=dataset_location) -> list:
     return parallel_list
 
 
-def calculate_full_n_gram_idf(articles, n=3, **kwargs) -> dict:
+def calculate_full_n_gram_idf(articles: list[str], n=3, **kwargs) -> dict[str, float]:
     """
 
     Args:
@@ -208,7 +212,7 @@ def calculate_full_n_gram_idf(articles, n=3, **kwargs) -> dict:
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
-def calculate_full_n_gram_idf_from_texts(text_list, n=3, **kwargs):
+def calculate_full_n_gram_idf_from_texts(text_list: list[str], n=3, **kwargs) -> dict[str, float]:
     """
     Same as calculate_full_n_gram_idf, only for list of texts instead of file paths
 
@@ -247,7 +251,7 @@ def calculate_full_n_gram_idf_from_texts(text_list, n=3, **kwargs):
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
-def calculate_full_word_idf(articles, **kwargs):
+def calculate_full_word_idf(articles: list[str], **kwargs) -> dict[str, float]:
     """
     Calculates idf for words
 
@@ -291,7 +295,7 @@ def calculate_full_word_idf(articles, **kwargs):
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
-def calculate_n_gram_tf_from_article(article, n=3, **kwargs):
+def calculate_n_gram_tf_from_article(article: str, n=3, **kwargs) -> dict[str, float]:
     """
     Calculates a n-gram tf dict for the text in the file path
 
@@ -314,7 +318,7 @@ def calculate_n_gram_tf_from_article(article, n=3, **kwargs):
     return calculate_n_gram_tf(prep_text, n)
 
 
-def calculate_n_gram_tf(preprocessed_text, n=3):
+def calculate_n_gram_tf(preprocessed_text: str, n=3) -> dict[str, float]:
     """
     Calculates the n-gram tf dictionary for a given text
 
@@ -343,7 +347,7 @@ def calculate_n_gram_tf(preprocessed_text, n=3):
     return n_gram_dict
 
 
-def calculate_word_tf(text: spacy.tokens.span.Span) -> dict:
+def calculate_word_tf(text: spacy.tokens.span.Span) -> dict[str, float]:
     """
         Calculates the n-gram tf dictionary for a given text
 
@@ -369,7 +373,7 @@ def calculate_word_tf(text: spacy.tokens.span.Span) -> dict:
     return tf_dict
 
 
-def make_n_grams(doc, n=3) -> list:
+def make_n_grams(doc: str, n=3) -> list[str]:
     """
     Creates a list of n-grams for a given text
 
@@ -383,7 +387,7 @@ def make_n_grams(doc, n=3) -> list:
     return [str(doc[i:i + n]) for i in range(len(doc) - n + 1)]
 
 
-def weighted(elem, tf, idf) -> float:
+def weighted(elem, tf: dict[str, int], idf: dict[str, float]) -> float:
     """
     Given an element and a tf and idf dictionary, returns the tf*idf value for this element
 
@@ -403,7 +407,7 @@ def weighted(elem, tf, idf) -> float:
     return tf[str_elem] * idf[str_elem]
 
 
-def article_generator(matched_article_list, *preprocessing_options):
+def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[list[str], list[str]]:
     """
     Generator function that iteratively returns preprocessed articles.
 
@@ -429,8 +433,9 @@ def article_generator(matched_article_list, *preprocessing_options):
 
 
 def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
-               spacy_sentences=True,
-               remove_stopwords=False, remove_punctuation=False):
+                            spacy_sentences=True,
+                            remove_stopwords=False, remove_punctuation=False)\
+        -> dict[str, bool]:
     """
     Helper function that creates a dictionary that can be given as **kwargs argument to preprocessing, idf and other functions.
     Contains all the possible settings for preprocessing.

@@ -3,7 +3,8 @@ import matching.SimilarityMeasures as measures
 
 
 # TODO: Add possibility to link original sentences to preprocessed ones!
-def match_documents_max(simple_doc, normal_doc, match_matrix, threshold=0.0, sd_threshold=0.0):
+def match_documents_max(simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
+        -> list[list[tuple[str, str], tuple[str, str]]]:
     """
     Calculates maximum matches for each simple sentence and returns the list of matched sentences.
     Please note that this only allows 1-to-n-matching. Taken from CATS
@@ -11,7 +12,7 @@ def match_documents_max(simple_doc, normal_doc, match_matrix, threshold=0.0, sd_
     Args:
         simple_doc: The simple document in preprocessed format
         normal_doc: The normal document in preprocessed format
-        match_matrix: A matrix with similarity scores for the sentences in the documents
+        match_matrix: A matrix with similarity scores for the sentences in the documents (simple_sentence x normal_sentence)
         threshold: Minimum matching threshold, is different for different kinds of matching algorithms.
         sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std)
 
@@ -30,7 +31,8 @@ def match_documents_max(simple_doc, normal_doc, match_matrix, threshold=0.0, sd_
             match_matrix[i, j] > threshold]
 
 
-def match_documents_max_increasing_subsequence(simple_doc, normal_doc, match_matrix, threshold=0.0, sd_threshold=0.0):
+def match_documents_max_increasing_subsequence(simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
+        -> list[list[tuple[str, str], tuple[str, str]]]:
     """
     Calculates maximum matches for each simple sentence, then returns the longest increasing subsequence
     (assumes order of information is kept)
@@ -52,12 +54,14 @@ def match_documents_max_increasing_subsequence(simple_doc, normal_doc, match_mat
         mean = np.mean(match_matrix)
         threshold = mean + (sd_threshold * std)
 
-    simple_matchings = match_documents_max(simple_doc, normal_doc, match_matrix, threshold, sd_threshold)
+    simple_matchings = match_documents_max(
+        simple_doc, normal_doc, match_matrix, threshold, sd_threshold)
 
     simple_indices = [match[0][0] for match in simple_matchings]
     normal_indices = [match[0][1] for match in simple_matchings]
 
-    simple_longest_indices, normal_longest_indices = get_longest_increasing_subsequence(simple_matchings)
+    simple_longest_indices, normal_longest_indices = get_longest_increasing_subsequence(
+        simple_matchings)
 
     final_matching = []
 
@@ -76,7 +80,8 @@ def match_documents_max_increasing_subsequence(simple_doc, normal_doc, match_mat
             else:
                 end_border = len(match_matrix[0]) - 1
         else:
-            max_val_ind = np.argmax(match_matrix[i][start_border:end_border + 1])
+            max_val_ind = np.argmax(
+                match_matrix[i][start_border:end_border + 1])
             val = match_matrix[i][start_border + max_val_ind]
             if val > threshold:
                 final_matching.append((elem, start_border + max_val_ind))
@@ -86,14 +91,26 @@ def match_documents_max_increasing_subsequence(simple_doc, normal_doc, match_mat
             match_matrix[i, j] > threshold]
 
 
-def get_longest_increasing_subsequence(simple_matchings):
+def get_longest_increasing_subsequence(simple_matchings: list[list[tuple[str, str], tuple[str, str]]]) \
+        -> list[list[int], list[int]]:
+    """
+    Calculates the longest increasing subsequence within a given matching
+
+    Args:
+        simple_matching: list containing matching information of the form
+            [(simple_index, normal_index), (simple_sentence, normal_sentence)]
+    Returns:
+        list of index matching tuples giving the longest increasing subsequence
+    """
     simple_indices = [match[0][0] for match in simple_matchings]
     normal_indices = [match[0][1] for match in simple_matchings]
 
     lis = [1] * len(normal_indices)
 
+    # calculate the length of every sequence by looking at the previous indices
     for i in range(1, len(normal_indices)):
         for j in range(0, i):
+            # if a previous index is non increasing, increment the sequence length if the found one is longer
             if normal_indices[i] >= normal_indices[j] and lis[i] < lis[j] + 1:
                 lis[i] = lis[j] + 1
 
@@ -105,18 +122,21 @@ def get_longest_increasing_subsequence(simple_matchings):
     val = normal_indices[start]
     current_lis = lis[start] + 1
 
+    # find the subsequence's indices by reverse walking through the lists
     for i in range(start, -1, -1):
+        # added to subsequence if it's value is non increasing and it's longest sequence position is one less than the current one
         if normal_indices[i] <= val and lis[i] == current_lis - 1:
             subseq.insert(0, normal_indices[i])
             simple_ind_subseq.insert(0, simple_indices[i])
+            # update current value, reduce length of missing sequence
             val = normal_indices[i]
             current_lis = lis[i]
 
     return simple_ind_subseq, subseq
 
 
-def calculate_similarity_matrix(simple_doc, normal_doc, similarity_measure, n=4, tf1=None, tf2=None,
-                                idf=None):
+def calculate_similarity_matrix(simple_doc: list[str], normal_doc: list[str], similarity_measure: str, n=4,
+                                tf1: dict[str, int] = None, tf2: dict[str, int] = None, idf: dict[str, float] = None):
     """
     Calculates the matrix of similarity scores for each sentence pairing
 
@@ -142,10 +162,12 @@ def calculate_similarity_matrix(simple_doc, normal_doc, similarity_measure, n=4,
 
             if similarity_measure == "n_gram":
                 assert tf1 is not None and tf2 is not None and idf is not None
-                value = measures.n_gram_similarity(sent1, sent2, tf1, tf2, idf, n)
+                value = measures.n_gram_similarity(
+                    sent1, sent2, tf1, tf2, idf, n)
             elif similarity_measure == "bag_of_words":
                 assert tf1 is not None and tf2 is not None and idf is not None
-                value = measures.bag_of_words_tf_idf_similarity(sent1, sent2, tf1, tf2, idf)
+                value = measures.bag_of_words_tf_idf_similarity(
+                    sent1, sent2, tf1, tf2, idf)
             elif similarity_measure == "cosine":
                 value = measures.cosine_similarity(sent1, sent2)
             elif similarity_measure == "average":
@@ -157,7 +179,8 @@ def calculate_similarity_matrix(simple_doc, normal_doc, similarity_measure, n=4,
             elif similarity_measure == "CWASA":
                 value = measures.CWASA_similarity(sent1, sent2)
             else:
-                print(f"Similarity measure {similarity_measure} not known and/or not implemented")
+                print(
+                    f"Similarity measure {similarity_measure} not known and/or not implemented")
 
             match_matrix[i, j] = value
 
