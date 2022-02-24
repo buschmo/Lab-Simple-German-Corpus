@@ -126,7 +126,7 @@ def parse_soups(base_url: str):
 
     # for key in removal:
     #     del header[key]
-    with open(Path(foldername, "header.json"), "w", encoding="utf-8") as f:
+    with open(utl.get_headerpath_from_url(base_url), "w", encoding="utf-8") as f:
         json.dump(new_header, f, indent=4)
 
 

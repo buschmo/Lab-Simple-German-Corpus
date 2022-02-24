@@ -110,22 +110,22 @@ def get_names_from_url(url: str) -> [str, str]:
 
 def get_headerpath_from_url(url: str) -> Path:
     foldername, _ = get_names_from_url(url)
-    return Path(foldername, "header.json")
+    return Path("../Datasets", foldername, "header.json")
 
 
 def get_log_path_from_url(url: str):
     foldername, _ = get_names_from_url(url)
-    return Path(foldername, "log.txt")
+    return Path("../Datasets", foldername, "log.txt")
 
 
 def get_parsed_path_from_url(url: str) -> Path:
     foldername, filename = get_names_from_url(url)
-    return Path(foldername, "parsed", filename + ".txt")
+    return Path("../Datasets", foldername, "parsed", filename + ".txt")
 
 
 def get_crawled_path_from_url(url: str) -> Path:
     foldername, filename = get_names_from_url(url)
-    return Path(foldername, "crawled", filename)
+    return Path("../Datasets", foldername, "crawled", filename)
 
 
 def get_soup_from_url(url: str):
@@ -144,6 +144,7 @@ def get_soup_from_url(url: str):
     return BeautifulSoup(response.text, 'html.parser')
 
 
+# TODO this function should be removed as its usage is unnecessary
 def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_filter_args: dict = {}) -> list[str]:
     if filter_args:
         blocks = soup.find_all(**filter_args)
@@ -226,6 +227,9 @@ def filter_urls(urls: list, base_url: str) -> list:
     return urls
 
 
+
+""" LOGGING UTILITIES
+"""
 def log_missing_url(url: str):
     if not already_logged(url):
         path = get_log_path_from_url(url)
