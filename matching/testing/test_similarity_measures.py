@@ -1,3 +1,5 @@
+from typing import Dict
+
 from matching.SimilarityMeasures import *
 
 if __name__ == '__main__':

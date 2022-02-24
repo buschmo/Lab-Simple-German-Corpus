@@ -43,7 +43,7 @@ def match_documents_max_increasing_subsequence(simple_doc: list[str], normal_doc
         normal_doc: The normal document in preprocessed format
         match_matrix: A matrix with similarity scores for the sentences in the documents
         threshold: Minimum matching threshold, is different for different kinds of matching algorithms.
-        sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std)
+        sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std). If > 0, overwrites threshold
 
     Returns:
         A list of matched sentences

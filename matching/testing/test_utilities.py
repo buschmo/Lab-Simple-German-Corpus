@@ -19,8 +19,17 @@ if __name__ == '__main__':
 
     import matching.DocumentMatching as dm
 
+    import datetime as dt
+
+    lasttime = dt.datetime.now()
+
     for simple, normal in article_generator(exemplary_articles, kwargs_embeddings):
         match_matrix = dm.calculate_similarity_matrix(simple, normal, 'CWASA')
         matches = dm.match_documents_max_increasing_subsequence(simple, normal, match_matrix, sd_threshold=1.5)
         for elem in matches:
             print(elem)
+
+        print(f"NEXT ARTICLE, time: {dt.datetime.now()-lasttime}")
+        lasttime = dt.datetime.now()
+
+    print("FINISHED")
