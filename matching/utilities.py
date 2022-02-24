@@ -1,10 +1,9 @@
-import spacy
 import spacy.tokens.span
 import re
 import numpy as np
 import os
 import json
-import defaultvalues
+from matching import defaultvalues
 
 nlp = spacy.load('de_core_news_lg')
 
@@ -154,6 +153,11 @@ def get_article_pairs(root_dir: str = dataset_location) -> list:
                     data = json.load(fp)
 
                 for fname in data:
+                    if str(root).endswith("www.brandeins.de"):
+                        name = str(fname).replace('.html', '')
+                        parallel_list.append((os.path.join(root, 'parsed/' + name + '_easy.html.txt'),
+                                              os.path.join(root, 'parsed/' + name + '_normal.html.txt')))
+                        continue
                     if 'matching_files' not in data[fname]:
                         continue
                     if 'easy' not in data[fname]:
@@ -318,7 +322,7 @@ def calculate_n_gram_tf_from_article(article: str, n=3, **kwargs) -> dict[str, f
     return calculate_n_gram_tf(prep_text, n)
 
 
-def calculate_n_gram_tf(preprocessed_text: str, n=3) -> dict[str, float]:
+def calculate_n_gram_tf(preprocessed_text: list[str], n: int = 3) -> dict[str, float]:
     """
     Calculates the n-gram tf dictionary for a given text
 
@@ -407,7 +411,8 @@ def weighted(elem, tf: dict[str, int], idf: dict[str, float]) -> float:
     return tf[str_elem] * idf[str_elem]
 
 
-def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[list[str], list[str]]:
+def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[
+    list[str], list[str]]:
     """
     Generator function that iteratively returns preprocessed articles.
 
@@ -434,7 +439,7 @@ def article_generator(matched_article_list: list[tuple[str, str]], *preprocessin
 
 def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
                             spacy_sentences=True,
-                            remove_stopwords=False, remove_punctuation=False)\
+                            remove_stopwords=False, remove_punctuation=False) \
         -> dict[str, bool]:
     """
     Helper function that creates a dictionary that can be given as **kwargs argument to preprocessing, idf and other functions.
