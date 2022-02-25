@@ -2,6 +2,15 @@ import numpy as np
 import matching.SimilarityMeasures as measures
 
 
+def match_documents(matching: str, simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
+        -> list[list[tuple[str, str], tuple[str, str]]]:
+
+    if matching == "max":
+        return match_documents_max(simple_doc, normal_doc, match_matrix, threshold, sd_threshold)
+    elif matching == "max_increasing_subsequence":
+        return match_documents_max_increasing_subsequence(simple_doc, normal_doc, match_matrix, threshold, sd_threshold)
+
+
 # TODO: Add possibility to link original sentences to preprocessed ones!
 def match_documents_max(simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
         -> list[list[tuple[str, str], tuple[str, str]]]:
@@ -136,7 +145,7 @@ def get_longest_increasing_subsequence(simple_matchings: list[list[tuple[str, st
 
 
 def calculate_similarity_matrix(simple_doc: list[str], normal_doc: list[str], similarity_measure: str, n=4,
-                                tf1: dict[str, int] = None, tf2: dict[str, int] = None, idf: dict[str, float] = None):
+                                tf1: dict[str, float] = None, tf2: dict[str, float] = None, idf: dict[str, float] = None):
     """
     Calculates the matrix of similarity scores for each sentence pairing
 
