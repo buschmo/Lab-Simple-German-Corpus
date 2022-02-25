@@ -411,8 +411,9 @@ def weighted(elem, tf: dict[str, int], idf: dict[str, float]) -> float:
     return tf[str_elem] * idf[str_elem]
 
 
-def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[
-    list[str], list[str]]:
+def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[str, str,
+                                                                                                    list[str], list[
+                                                                                                        str]]:
     """
     Generator function that iteratively returns preprocessed articles.
 
@@ -426,12 +427,17 @@ def article_generator(matched_article_list: list[tuple[str, str]], *preprocessin
     for simple, normal in matched_article_list:
         simple_arts = []
         normal_arts = []
+        with open(simple, 'r') as fp:
+            simple_text = fp.read()
+        with open(normal, 'r') as fp:
+            normal_text = fp.read()
+
+        # don't process exact copies
+        if simple_text == normal_text:
+            continue
+
         for kwargs in preprocessing_options:
-            with open(simple, 'r') as fp:
-                simple_text = fp.read()
             simple_arts.append(preprocess(simple_text, **kwargs))
-            with open(normal, 'r') as fp:
-                normal_text = fp.read()
             normal_arts.append(preprocess(normal_text, **kwargs))
 
         yield simple, normal, *simple_arts, *normal_arts
