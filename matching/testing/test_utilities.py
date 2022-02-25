@@ -23,7 +23,8 @@ if __name__ == '__main__':
 
     lasttime = dt.datetime.now()
 
-    for simple, normal in article_generator(exemplary_articles, kwargs_embeddings):
+    for simple_file, normal_file, simple, normal in article_generator(exemplary_articles, kwargs_embeddings):
+        print(simple_file, normal_file)
         match_matrix = dm.calculate_similarity_matrix(simple, normal, 'CWASA')
         matches = dm.match_documents_max_increasing_subsequence(simple, normal, match_matrix, sd_threshold=1.5)
         for elem in matches:

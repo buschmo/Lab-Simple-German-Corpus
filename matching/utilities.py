@@ -421,7 +421,7 @@ def article_generator(matched_article_list: list[tuple[str, str]], *preprocessin
         *preprocessing_options: 1 or many preprocessing options.
 
     Returns:
-        Preprocessed articles in the form simple_preprocessed(option_1), (..., simple_preprocessed(option_n)), normal_preprocessed(option_1), (..., normal_preprocessed(option_n))
+        simple and normal link to file and preprocessed articles in the form simple_preprocessed(option_1), (..., simple_preprocessed(option_n)), normal_preprocessed(option_1), (..., normal_preprocessed(option_n))
     """
     for simple, normal in matched_article_list:
         simple_arts = []
@@ -434,7 +434,7 @@ def article_generator(matched_article_list: list[tuple[str, str]], *preprocessin
                 normal_text = fp.read()
             normal_arts.append(preprocess(normal_text, **kwargs))
 
-        yield *simple_arts, *normal_arts
+        yield simple, normal, *simple_arts, *normal_arts
 
 
 def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
