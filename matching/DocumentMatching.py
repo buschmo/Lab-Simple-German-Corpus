@@ -13,7 +13,7 @@ def match_documents(matching: str, simple_doc: list[str], normal_doc: list[str],
 
 # TODO: Add possibility to link original sentences to preprocessed ones!
 def match_documents_max(simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
-        -> list[list[tuple[str, str], tuple[str, str]]]:
+        -> list[list[tuple[str, str], tuple[str, str], float]]:
     """
     Calculates maximum matches for each simple sentence and returns the list of matched sentences.
     Please note that this only allows 1-to-n-matching. Taken from CATS
@@ -26,7 +26,7 @@ def match_documents_max(simple_doc: list[str], normal_doc: list[str], match_matr
         sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std)
 
     Returns:
-        A list of matched sentences
+        A list of matched sentences with their indices and their similarity value
     """
 
     if sd_threshold > 0.0:
@@ -36,12 +36,13 @@ def match_documents_max(simple_doc: list[str], normal_doc: list[str], match_matr
 
     max_values = np.argmax(match_matrix, axis=1)
 
-    return [[(i, j), (simple_doc[i], normal_doc[j])] for i, j in enumerate(max_values) if
+    # converting to int makes them serializable
+    return [[(int(i), int(j)), (str(simple_doc[i]), str(normal_doc[j])), match_matrix[i,j]] for i, j in enumerate(max_values) if
             match_matrix[i, j] > threshold]
 
 
 def match_documents_max_increasing_subsequence(simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
-        -> list[list[tuple[str, str], tuple[str, str]]]:
+        -> list[list[tuple[str, str], tuple[str, str], float]]:
     """
     Calculates maximum matches for each simple sentence, then returns the longest increasing subsequence
     (assumes order of information is kept)
@@ -55,7 +56,7 @@ def match_documents_max_increasing_subsequence(simple_doc: list[str], normal_doc
         sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std). If > 0, overwrites threshold
 
     Returns:
-        A list of matched sentences
+        A list of matched sentences with their indices and their similarity value
     """
 
     if sd_threshold > 0.0:
@@ -96,7 +97,8 @@ def match_documents_max_increasing_subsequence(simple_doc: list[str], normal_doc
                 final_matching.append((elem, start_border + max_val_ind))
                 start_border += max_val_ind
 
-    return [[(i, j), (simple_doc[i], normal_doc[j])] for i, j in final_matching if
+    # converting i and j to int makes them json serializable
+    return [[(int(i), int(j)), (str(simple_doc[i]), str(normal_doc[j])), match_matrix[i,j]] for i, j in final_matching if
             match_matrix[i, j] > threshold]
 
 

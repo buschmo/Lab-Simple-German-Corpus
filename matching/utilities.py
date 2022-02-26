@@ -286,7 +286,7 @@ def calculate_full_word_idf(articles: list[str], **kwargs) -> dict[str, float]:
 
         for sent in prep_text:
             for word in sent:
-                article_n_gram_set.add(word)
+                article_n_gram_set.add(str(word))
 
         for elem in article_n_gram_set:
             if str(elem) in idf_dict:
@@ -467,3 +467,8 @@ def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=T
     return {'remove_hyphens': remove_hyphens, 'lowercase': lowercase, 'remove_gender': remove_gender,
             'lemmatization': lemmatization, 'spacy_sentences': spacy_sentences,
             'remove_stopwords': remove_stopwords, 'remove_punctuation': remove_punctuation}
+
+
+def make_file_name(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
+    return f"results/{simple_file[-20:]}___{normal_file[-20:]}---{sim_measure}---{matching}---{str(sd_threshold)}." \
+           f"matches"
