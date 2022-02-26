@@ -43,43 +43,43 @@ def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, r
 
     original_text_sents = [sent for sent in nlp(text).sents]
 
+    if spacy_sentences:
+        sent_list = [str(sent) for sent in nlp(text).sents]
+    else:
+        sent_list = [sent for sent in text.split('\n')]
+
     if remove_hyphens:
-        text = re.sub('-[A-Z]', _kill_hyphen, text)
+        sent_list = [re.sub('-[A-Z]', _kill_hyphen, sent) for sent in sent_list]
 
     if remove_gender:
-        text = re.sub('\*in(nen)?', '', text)
-        text = re.sub(':in(nen)?', '', text)
-        text = re.sub('_in(nen)?', '', text)
-        text = re.sub('[a-z]In(nen)?', _kill_binnenI, text)
+        sent_list = [re.sub('\*in(nen)?', '', sent) for sent in sent_list]
+        sent_list = [re.sub(':in(nen)?', '', sent) for sent in sent_list]
+        sent_list = [re.sub('_in(nen)?', '', sent) for sent in sent_list]
+        sent_list = [re.sub('[a-z]In(nen)?', _kill_binnenI, sent) for sent in sent_list]
 
     if lowercase:
-        text = text.lower()
+        sent_list = [sent.lower() for sent in sent_list]
 
     if lemmatization:
-        doc = nlp(text)
-        text = ' '.join([word.lemma_ for word in doc])
+        sent_list = [' '.join([word.lemma_ for word in nlp(sent)]) for sent in sent_list]
 
     if remove_stopwords:
         nlp_text = nlp(text)
         text = ' '.join(
             [word.text for word in nlp_text if word.text not in stopwords])
 
-    text = re.sub(' +', ' ', text)
+        sent_list = [' '.join(word.text for word in sent if word.text not in stopwords) for sent in sent_list]
 
-    if spacy_sentences:
-        sent_list = [sent for sent in nlp(text).sents]
-    else:
-        sent_list = [nlp(sent) for sent in text.split('\n')]
+    sent_list = [re.sub(' +', ' ', sent) for sent in sent_list]
+
+    sent_list = [nlp(sent) for sent in sent_list]
 
     if remove_punctuation:
         sent_list = [nlp(' '.join(
             [str(token) for token in sent if not token.is_punct])) for sent in sent_list]
 
 
-    if len(sent_list) == len(original_text_sents):
-        print("EVERYTHING ALRIGHT")
-    else:
-        print("ERROR", sent_list, original_text_sents)
+    assert len(sent_list) == len(original_text_sents)
 
     return sent_list
 
@@ -425,6 +425,8 @@ def weighted(elem, tf: dict[str, float], idf: dict[str, float]) -> float:
 
 
 def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[str, str,
+                                                                                                    list[Doc],
+                                                                                                    list[Doc],
                                                                                                     list[Doc], list[
                                                                                                         Doc]]:
     """
@@ -449,12 +451,25 @@ def article_generator(matched_article_list: list[tuple[str, str]], *preprocessin
         if simple_text == normal_text:
             continue
 
+        simple_original = get_original_text_preprocessed(simple_text)
+        normal_original = get_original_text_preprocessed(normal_text)
+
         for kwargs in preprocessing_options:
             simple_arts.append(preprocess(simple_text, **kwargs))
             normal_arts.append(preprocess(normal_text, **kwargs))
 
-        yield simple, normal, *simple_arts, *normal_arts
+        yield simple, normal, simple_original, normal_original, *simple_arts, *normal_arts
 
+
+def get_original_text_preprocessed(text, spacy_sentences=True):
+    if spacy_sentences:
+        text = text.replace('\n', ' ')
+        text = re.sub('\s+', ' ', text)
+        sent_list = [sent for sent in nlp(text).sents]
+    else:
+        sent_list = [nlp(sent) for sent in text.split('\n')]
+
+    return sent_list
 
 def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
                             spacy_sentences=True,
@@ -483,5 +498,5 @@ def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=T
 
 
 def make_file_name(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
-    return f"results/{simple_file[-20:]}___{normal_file[-20:]}---{sim_measure}---{matching}---{str(sd_threshold)}." \
+    return f"results/matched/{simple_file[-20:]}___{normal_file[-20:]}---{sim_measure}---{matching}---{str(sd_threshold)}." \
            f"matches"

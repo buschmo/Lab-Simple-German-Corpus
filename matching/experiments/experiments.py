@@ -72,7 +72,8 @@ if __name__ == '__main__':
         with open(f"results/{n}_gram_idf.json", 'w') as fp:
             json.dump([idf_article_hash, n_gram_idf], fp, ensure_ascii=False)
 
-    for simple_name, normal_name, simple_gram, simple_embedding, normal_gram, normal_embedding in util.article_generator(
+    for simple_name, normal_name, simple_original, normal_original, \
+        simple_gram, simple_embedding, normal_gram, normal_embedding in util.article_generator(
         articles, kwargs_gram, kwargs_embeddings):
         print(simple_name, normal_name)
 
@@ -120,10 +121,9 @@ if __name__ == '__main__':
 
             for matching in doc_matchings:
                 for sd_threshold in sd_thresholds:
-                    if sim_measure in ["n_gram", "bag_of_words"]:
-                        results = dm.match_documents(matching, simple_gram, normal_gram, sim_matrix, sd_threshold=sd_threshold)
-                    else:
-                        results = dm.match_documents(matching, simple_embedding, normal_embedding, sim_matrix, sd_threshold=sd_threshold)
+
+                    results = dm.match_documents(matching, simple_original, normal_original,
+                                                 sim_matrix, sd_threshold=sd_threshold)
 
                     filename = util.make_file_name(simple_file, normal_file, sim_measure, matching, sd_threshold)
 

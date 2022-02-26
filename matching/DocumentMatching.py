@@ -72,6 +72,9 @@ def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc
     simple_indices = [match[0][0] for match in simple_matchings]
     normal_indices = [match[0][1] for match in simple_matchings]
 
+    if len(simple_matchings) == 0:
+        return []
+
     simple_longest_indices, normal_longest_indices = get_longest_increasing_subsequence(
         simple_matchings)
 
