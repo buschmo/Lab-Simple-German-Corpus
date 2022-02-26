@@ -1,13 +1,12 @@
+from spacy.tokens.doc import Doc
+
 import matching.utilities as util
 from collections import Counter
 import numpy as np
-import spacy
-import spacy.tokens.span
-import matplotlib.pyplot as plt
 import scipy.optimize
 
 
-def n_gram_similarity(sentence1: str, sentence2: str, tf1: dict[str, int], tf2: dict[str, int], idf: dict[str, float], n=3) \
+def n_gram_similarity(sentence1: Doc, sentence2: Doc, tf1: dict[str, float], tf2: dict[str, float], idf: dict[str, float], n=3) \
         -> float:
     """
     Calculates n-gram-similarity between two sentences
@@ -29,7 +28,7 @@ def n_gram_similarity(sentence1: str, sentence2: str, tf1: dict[str, int], tf2: 
     return _tf_idf_similarity(n_1, n_2, tf1, tf2, idf)
 
 
-def bag_of_words_tf_idf_similarity(sentence1: str, sentence2: str, tf1: dict[str, int], tf2: dict[str, int], idf: dict[str, float]) \
+def bag_of_words_tf_idf_similarity(sentence1: Doc, sentence2: Doc, tf1: dict[str, float], tf2: dict[str, float], idf: dict[str, float]) \
         -> float:
     """
     Calculates the bag of words similarity between sentence1 and sentence2
@@ -50,7 +49,7 @@ def bag_of_words_tf_idf_similarity(sentence1: str, sentence2: str, tf1: dict[str
     return _tf_idf_similarity(n_1, n_2, tf1, tf2, idf)
 
 
-def _tf_idf_similarity(n_1: list[str], n_2: list[str], tf1: dict[str, int], tf2: dict[str, int], idf: dict[str, float]) \
+def _tf_idf_similarity(n_1: list[str], n_2: list[str], tf1: dict[str, float], tf2: dict[str, float], idf: dict[str, float]) \
         -> float:
     """
     Calculates tf_idf_similarity between two lists of values (could be words in sentences as well as n-grams)
@@ -84,7 +83,7 @@ def _tf_idf_similarity(n_1: list[str], n_2: list[str], tf1: dict[str, int], tf2:
     return float(numerator) / denominator
 
 
-def cosine_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.span.Span) \
+def cosine_similarity(sentence1: Doc, sentence2: Doc) \
         -> float:
     """
     Calculates cosine similarity between two sentences
@@ -99,7 +98,7 @@ def cosine_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens
     return sentence1.similarity(sentence2)
 
 
-def average_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.span.Span) \
+def average_similarity(sentence1: Doc, sentence2: Doc) \
         -> float:
     """
     Calculates the average similarity between all word pairs
@@ -117,10 +116,10 @@ def average_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.token
         for j, word2 in enumerate(sentence2):
             sim_matrix[i, j] = word1.similarity(word2)
 
-    return np.mean(sim_matrix)
+    return float(np.mean(sim_matrix))
 
 
-def max_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.span.Span) \
+def max_similarity(sentence1: Doc, sentence2: Doc) \
         -> float:
     """
     Calculates the maximal similarity first for the words from the first sentence, then for the words from the second
@@ -151,7 +150,7 @@ def max_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.sp
     return (sts1 + sts2) / 2
 
 
-def max_matching_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.span.Span) \
+def max_matching_similarity(sentence1: Doc, sentence2: Doc) \
         -> float:
     """
     Calculates the similarity by calculating a maximum weight matching using the Hungarian algorithm.
@@ -179,7 +178,7 @@ def max_matching_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.
     return (1.0 / min(len(sentence1), len(sentence2))) * sim_matrix[row_ind, col_ind].sum()
 
 
-def CWASA_similarity(sentence1: spacy.tokens.span.Span, sentence2: spacy.tokens.span.Span) \
+def CWASA_similarity(sentence1: Doc, sentence2: Doc) \
         -> float:
     """
     Calculates the CWASA similarity

@@ -1,8 +1,13 @@
-import spacy.tokens.span
+from typing import Union, List
+
+import spacy
 import re
 import numpy as np
 import os
 import json
+
+from spacy.tokens import Doc
+
 from matching import defaultvalues
 
 nlp = spacy.load('de_core_news_lg')
@@ -15,7 +20,7 @@ stopwords = nlp.Defaults.stop_words
 def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, remove_gender: bool = True,
                lemmatization: bool = False, spacy_sentences: bool = True, remove_stopwords: bool = False,
                remove_punctuation: bool = False) \
-        -> list[str]:
+        -> list[Doc]:
     """
     Preprocesses a string according to parameters that can be set by the user.
 
@@ -35,6 +40,8 @@ def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, r
     if spacy_sentences:
         text = text.replace('\n', ' ')
         text = re.sub('\s+', ' ', text)
+
+    original_text_sents = [sent for sent in nlp(text).sents]
 
     if remove_hyphens:
         text = re.sub('-[A-Z]', _kill_hyphen, text)
@@ -67,6 +74,12 @@ def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, r
     if remove_punctuation:
         sent_list = [nlp(' '.join(
             [str(token) for token in sent if not token.is_punct])) for sent in sent_list]
+
+
+    if len(sent_list) == len(original_text_sents):
+        print("EVERYTHING ALRIGHT")
+    else:
+        print("ERROR", sent_list, original_text_sents)
 
     return sent_list
 
@@ -171,7 +184,7 @@ def get_article_pairs(root_dir: str = dataset_location) -> list:
     return parallel_list
 
 
-def calculate_full_n_gram_idf(articles: list[str], n=3, **kwargs) -> dict[str, float]:
+def calculate_full_n_gram_idf(articles: set[str], n=3, **kwargs) -> dict[str, float]:
     """
 
     Args:
@@ -216,7 +229,7 @@ def calculate_full_n_gram_idf(articles: list[str], n=3, **kwargs) -> dict[str, f
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
-def calculate_full_n_gram_idf_from_texts(text_list: list[str], n=3, **kwargs) -> dict[str, float]:
+def calculate_full_n_gram_idf_from_texts(text_list: set[str], n=3, **kwargs) -> dict[str, float]:
     """
     Same as calculate_full_n_gram_idf, only for list of texts instead of file paths
 
@@ -255,7 +268,7 @@ def calculate_full_n_gram_idf_from_texts(text_list: list[str], n=3, **kwargs) ->
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
-def calculate_full_word_idf(articles: list[str], **kwargs) -> dict[str, float]:
+def calculate_full_word_idf(articles: set[str], **kwargs) -> dict[str, float]:
     """
     Calculates idf for words
 
@@ -322,7 +335,7 @@ def calculate_n_gram_tf_from_article(article: str, n=3, **kwargs) -> dict[str, f
     return calculate_n_gram_tf(prep_text, n)
 
 
-def calculate_n_gram_tf(preprocessed_text: list[str], n: int = 3) -> dict[str, float]:
+def calculate_n_gram_tf(preprocessed_text: list[Doc], n: int = 3) -> dict[str, float]:
     """
     Calculates the n-gram tf dictionary for a given text
 
@@ -351,7 +364,7 @@ def calculate_n_gram_tf(preprocessed_text: list[str], n: int = 3) -> dict[str, f
     return n_gram_dict
 
 
-def calculate_word_tf(text: spacy.tokens.span.Span) -> dict[str, float]:
+def calculate_word_tf(text: list[Doc]) -> dict[str, float]:
     """
         Calculates the n-gram tf dictionary for a given text
 
@@ -377,7 +390,7 @@ def calculate_word_tf(text: spacy.tokens.span.Span) -> dict[str, float]:
     return tf_dict
 
 
-def make_n_grams(doc: str, n=3) -> list[str]:
+def make_n_grams(doc, n=3) -> list[str]:
     """
     Creates a list of n-grams for a given text
 
@@ -391,7 +404,7 @@ def make_n_grams(doc: str, n=3) -> list[str]:
     return [str(doc[i:i + n]) for i in range(len(doc) - n + 1)]
 
 
-def weighted(elem, tf: dict[str, int], idf: dict[str, float]) -> float:
+def weighted(elem, tf: dict[str, float], idf: dict[str, float]) -> float:
     """
     Given an element and a tf and idf dictionary, returns the tf*idf value for this element
 
@@ -412,8 +425,8 @@ def weighted(elem, tf: dict[str, int], idf: dict[str, float]) -> float:
 
 
 def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[str, str,
-                                                                                                    list[str], list[
-                                                                                                        str]]:
+                                                                                                    list[Doc], list[
+                                                                                                        Doc]]:
     """
     Generator function that iteratively returns preprocessed articles.
 

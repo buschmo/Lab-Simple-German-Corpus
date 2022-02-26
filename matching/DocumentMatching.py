@@ -1,8 +1,10 @@
 import numpy as np
+from spacy.tokens.doc import Doc
+
 import matching.SimilarityMeasures as measures
 
 
-def match_documents(matching: str, simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
+def match_documents(matching: str, simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
         -> list[list[tuple[str, str], tuple[str, str]]]:
 
     if matching == "max":
@@ -12,7 +14,7 @@ def match_documents(matching: str, simple_doc: list[str], normal_doc: list[str],
 
 
 # TODO: Add possibility to link original sentences to preprocessed ones!
-def match_documents_max(simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
+def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
         -> list[list[tuple[str, str], tuple[str, str], float]]:
     """
     Calculates maximum matches for each simple sentence and returns the list of matched sentences.
@@ -41,7 +43,7 @@ def match_documents_max(simple_doc: list[str], normal_doc: list[str], match_matr
             match_matrix[i, j] > threshold]
 
 
-def match_documents_max_increasing_subsequence(simple_doc: list[str], normal_doc: list[str], match_matrix, threshold=0.0, sd_threshold=0.0) \
+def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
         -> list[list[tuple[str, str], tuple[str, str], float]]:
     """
     Calculates maximum matches for each simple sentence, then returns the longest increasing subsequence
@@ -103,7 +105,7 @@ def match_documents_max_increasing_subsequence(simple_doc: list[str], normal_doc
 
 
 def get_longest_increasing_subsequence(simple_matchings: list[list[tuple[str, str], tuple[str, str]]]) \
-        -> list[list[int], list[int]]:
+        -> tuple[list[str], list[str]]:
     """
     Calculates the longest increasing subsequence within a given matching
 
@@ -146,7 +148,7 @@ def get_longest_increasing_subsequence(simple_matchings: list[list[tuple[str, st
     return simple_ind_subseq, subseq
 
 
-def calculate_similarity_matrix(simple_doc: list[str], normal_doc: list[str], similarity_measure: str, n=4,
+def calculate_similarity_matrix(simple_doc: list[Doc], normal_doc: list[Doc], similarity_measure: str, n=4,
                                 tf1: dict[str, float] = None, tf2: dict[str, float] = None, idf: dict[str, float] = None):
     """
     Calculates the matrix of similarity scores for each sentence pairing
