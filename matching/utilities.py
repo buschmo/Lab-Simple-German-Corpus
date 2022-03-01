@@ -166,11 +166,11 @@ def get_article_pairs(root_dir: str = dataset_location) -> list:
                     data = json.load(fp)
 
                 for fname in data:
-                    if str(root).endswith("www.brandeins.de"):
-                        name = str(fname).replace('.html', '')
-                        parallel_list.append((os.path.join(root, 'parsed/' + name + '_easy.html.txt'),
-                                              os.path.join(root, 'parsed/' + name + '_normal.html.txt')))
-                        continue
+                    # if str(root).endswith("www.brandeins.de"):
+                    #     name = str(fname).replace('.html', '')
+                    #     parallel_list.append((os.path.join(root, 'parsed/' + name + '_easy.html.txt'),
+                    #                           os.path.join(root, 'parsed/' + name + '_normal.html.txt')))
+                    #     continue
                     if 'matching_files' not in data[fname]:
                         continue
                     if 'easy' not in data[fname]:
