@@ -101,6 +101,9 @@ def remove_header_entry(url:str, main_key:str):
     """ Removes an entry and deletes all corresponding files.
     """
     header = load_header(url)
+    # already deleted
+    if not main_key in header.keys():
+        return
     
     # delete crawled file
     crawled_path = get_crawled_path_from_url(header[main_key]["url"])
