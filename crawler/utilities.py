@@ -97,6 +97,41 @@ def save_header(filepath, url: str, matching_filepath: Path, bool_easy: bool = F
         json.dump(header, f, indent=4)
 
 
+def remove_header_entry(url:str, main_key:str):
+    """ Removes an entry and deletes all corresponding files.
+    """
+    header = load_header(url)
+    
+    # delete crawled file
+    crawled_path = get_crawled_path_from_url(header[main_key]["url"])
+    if os.path.exists(crawled_path):
+        os.remove(crawled_path)
+    # delete parsed file
+    parsed_path = get_parsed_path_from_url(header[main_key]["url"])
+    if os.path.exists(parsed_path):
+        os.remove(parsed_path)
+    
+    matching_files = header[main_key]["matching_files"]
+    for key in matching_files:
+        header[key]["matching_files"].remove(main_key)
+        # remove files with no matching files
+        if not header[key]["matching_files"]:
+            # delete crawled file
+            crawled_path = get_crawled_path_from_url(header[key]["url"])
+            if os.path.exists(crawled_path):
+                os.remove(crawled_path)
+            # delete parsed file
+            parsed_path = get_parsed_path_from_url(header[key]["url"])
+            if os.path.exists(parsed_path):
+                os.remove(parsed_path)
+            del header[key]
+
+    del header[main_key]
+    headerpath = get_headerpath_from_url(url)
+    with open(headerpath, "w", encoding="utf-8") as f:
+        json.dump(header, f, indent=4)
+    
+
 def get_names_from_url(url: str) -> [str, str]:
     parsed_url = urllib.parse.urlparse(url)
     foldername = parsed_url.netloc
@@ -175,6 +210,7 @@ def parse_url(url, base_url):
 
 def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
     header = load_header(base_url)
+    l_remove = []
     for filename in header.keys():
         url = header[filename]["url"]
         path = get_parsed_path_from_url(url)
@@ -185,8 +221,12 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
         # get soup for parsing
         soup = read_soup(url)
         parsed_content = parser(soup)
-        if not parsed_content:
-            print(f"Unclear content for {url}.")
+
+
+        # filter out empty results as no parsable entry exists
+        if not parsed_content or not parsed_content.contents:
+            print(f"Unclear content for {url}. Header entry is removed.")
+            l_remove.append(filename)
             continue
 
         if not os.path.exists(path.parent):
@@ -207,6 +247,9 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
                     if sentence in [". ", ": ", "? ", "! "]:
                         f.seek(f.tell()-1)
                     f.write(f"{sentence}\n")
+
+    for key in l_remove:
+        remove_header_entry(base_url, key)
 
 
 def filter_urls(urls: list, base_url: str) -> list:
