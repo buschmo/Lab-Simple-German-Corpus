@@ -116,7 +116,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
 
 def main():
     base_url = "https://www.lebenshilfe-main-taunus.de/"
-    crawling(base_url)
+    # crawling(base_url)
     utl.parse_soups(base_url, parser)
 
 

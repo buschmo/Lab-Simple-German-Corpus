@@ -3,6 +3,7 @@ import re
 from bs4 import BeautifulSoup
 from pathlib import Path
 import json
+import os
 
 
 def crawl_site(url, base_url):
@@ -42,11 +43,15 @@ def parse_soups(base_url: str):
     header = utl.load_header(base_url)
     foldername, _ = utl.get_names_from_url(base_url)
 
-    print(utl.get_headerpath_from_url(base_url))
-    print(foldername)
     removal = []
 
+    output_folder = utl.get_parsed_path_from_url(base_url)
+    if not os.path.exists(output_folder.parent):
+        os.mkdir(output_folder.parent)
+
     new_header = {}
+    
+    
     for filename in header.keys():
         # check if file has not been parsed
         if not filename in header[filename]["matching_files"]:
@@ -129,11 +134,14 @@ def parse_soups(base_url: str):
     with open(utl.get_headerpath_from_url(base_url), "w", encoding="utf-8") as f:
         json.dump(new_header, f, indent=4)
 
+    # remove one specific entry as it uses an image https://www.brandeins.de/magazine/brand-eins-wirtschaftsmagazin/2019/gehalt/leichte-sprache-also-haben-wir-uns-nur-ganz-wenig-vorgenommen
+    utl.remove_header_entry(base_url, "www.brandeins.de__magazine__brand-eins-wirtschaftsmagazin__2019__gehalt__leichte-sprache-also-haben-wir-uns-nur-ganz-wenig-vorgenommen_easy.html")
+
+
 
 def main():
     base_url = "https://www.brandeins.de/"
-    crawling(base_url)
-
+    # crawling(base_url)
     parse_soups(base_url)
 
 
