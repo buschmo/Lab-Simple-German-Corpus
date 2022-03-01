@@ -1,10 +1,8 @@
 import matching.utilities as util
-
 import matching.DocumentMatching as dm
-
 import json
-
 import hashlib
+import os
 
 from pathlib import Path
 
@@ -15,6 +13,12 @@ sd_thresholds = [0.0, 1.5]
 doc_matchings = ["max", "max_increasing_subsequence"]
 
 header_file = "results/header.json"
+
+if not os.path.exists("results/"):
+    os.mkdir("results")
+
+if not os.path.exists("results/matched"):
+    os.mkdir("results/matched")
 
 if not Path(header_file).exists():
     header = dict()
@@ -81,9 +85,7 @@ if __name__ == '__main__':
         normal_file = normal_name.split('/')[-1]
 
         if simple_file in header:
-
             finished = True
-
             for sim_measure in similarity_measures:
                 for matching in doc_matchings:
                     for sd_threshold in sd_thresholds:
@@ -126,6 +128,7 @@ if __name__ == '__main__':
                                                  sim_matrix, sd_threshold=sd_threshold)
 
                     filename = util.make_file_name(simple_file, normal_file, sim_measure, matching, sd_threshold)
+
 
                     with open(filename, 'w') as fp:
                         json.dump(results, fp, ensure_ascii=False, indent=2)
