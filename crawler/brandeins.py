@@ -102,6 +102,8 @@ def parse_soups(base_url: str):
 
         # empty texts are not saved
         if (not text_easy) or (not text_normal):
+            del new_header[easy_filepath.stem]
+            del new_header[normal_filepath.stem]
             continue
         
         with open(easy_filepath, "w", encoding="utf-8") as f:
