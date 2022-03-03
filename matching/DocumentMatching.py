@@ -34,7 +34,7 @@ def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matr
     if sd_threshold > 0.0:
         std = np.std(match_matrix)
         mean = np.mean(match_matrix)
-        threshold = mean + (sd_threshold * std)
+        threshold = max(threshold, mean + (sd_threshold * std))
 
     max_values = np.argmax(match_matrix, axis=1)
 
@@ -64,7 +64,7 @@ def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc
     if sd_threshold > 0.0:
         std = np.std(match_matrix)
         mean = np.mean(match_matrix)
-        threshold = mean + (sd_threshold * std)
+        threshold = max(threshold, mean + (sd_threshold * std))
 
     simple_matchings = match_documents_max(
         simple_doc, normal_doc, match_matrix, threshold, sd_threshold)
@@ -160,7 +160,6 @@ def calculate_similarity_matrix(simple_doc: list[Doc], normal_doc: list[Doc], si
         simple_doc: A preprocessed document in simple German
         normal_doc: A preprocessed document in normal German
         similarity_measure: A similarity measure from the list of possible similarity measures, can be n_gram, bag_of_words, cosine, average, maximum, max_matching, and CWASA
-        threshold: Minimal threshold for matching
         n: needed for n-grams
         tf1: Needed for tfidf similarity measures
         tf2: Needed for tfidf similarity measures
