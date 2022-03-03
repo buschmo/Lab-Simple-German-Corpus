@@ -138,11 +138,11 @@ for i in range(3):
 
 update_sentences()
 
-labelSimpleSentence = Label(textvariable=simpleLabel, wraplength=700, bg='white', font=('helvetica 14'))
+labelSimpleSentence = Label(textvariable=simpleLabel, wraplength=700, bg='white', font=('Helvetica 14'))
 
 labelSimpleSentence.grid(column=0, row=0, columnspan=3)
 
-labelNormalSentence = Label(textvariable=normalLabel, wraplength=700, bg='white', font=('helvetica 14'))
+labelNormalSentence = Label(textvariable=normalLabel, wraplength=700, bg='white', font=('Helvetica 14'))
 
 labelNormalSentence.grid(column=0, row=1, columnspan=3)
 
