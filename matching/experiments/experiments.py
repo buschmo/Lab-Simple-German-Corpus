@@ -3,7 +3,7 @@ import matching.DocumentMatching as dm
 import json
 import hashlib
 import os
-
+import sys
 from pathlib import Path
 
 similarity_measures = ["n_gram", "bag_of_words", "cosine", "average", "maximum", "max_matching", "CWASA"]
@@ -137,7 +137,5 @@ if __name__ == '__main__':
 
                     with open(header_file, 'w') as fp:
                         json.dump(header, fp, ensure_ascii=False, indent=2)
-
-import sys
 
 sys.exit(0)
