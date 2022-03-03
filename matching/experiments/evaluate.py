@@ -4,6 +4,8 @@ from tkinter import *
 
 file_matchings = set()
 
+print(os.environ.get("USERNAME"))
+
 for root, dirs, files in os.walk("results/matched"):
     for file in files:
         if file.endswith(".matches"):
@@ -13,7 +15,10 @@ for root, dirs, files in os.walk("results/matched"):
 
 
 def get_matches():
-    for comb in file_matchings:
+    user = os.environ.get("USERNAME")
+    all_files = sorted(list(file_matchings), reverse=(user == "malte"))
+
+    for comb in all_files:
         matches = set()
         for root, dirs, files in os.walk("results/matched"):
             for file in files:
