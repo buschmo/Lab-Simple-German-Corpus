@@ -25,7 +25,7 @@ def get_results_done(results):
 
         for root, dirs, files in os.walk("results/matched"):
             for file in files:
-                if file.startswith(comb) and not file.endswith(".results"):
+                if file.startswith(comb) and file.endswith("1.5.matches"):
                     print("\t".join(file.split('---')[1:]))
                     with open(os.path.join(root, file), 'r') as fp:
                         file_res = json.load(fp)

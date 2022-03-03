@@ -22,7 +22,7 @@ def get_matches():
         matches = set()
         for root, dirs, files in os.walk("results/matched"):
             for file in files:
-                if file.endswith(".matches") and file.startswith(comb):
+                if file.endswith("1.5.matches") and file.startswith(comb):
                     with open(os.path.join(root, file), 'r') as fp:
                         doc_matches = json.load(fp)
                         for ind, sentences, sim in doc_matches:
