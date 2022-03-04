@@ -9,11 +9,13 @@ Currently, there are only few works that build a parallel corpus between Simple 
 1. Scraping websites with parallel versions for Simple German and standard German
 2. Implementing various algorithms presented in the literature to form a corpus that contains aligned, "translated" sentences.
 
-In later work, such a (potentially expanded) corpus may be used to implement automatic machine learning translation from standard German to Simple German. However, as it stands now, the amount of data is not sufficient for such a task 
+In later work, such a (potentially expanded) corpus may be used to implement automatic machine learning translation from standard German to Simple German. However, as it stands now, the amount of data is not sufficient for such a task.
+
 
 ## Resources
-
 Papers that we use as inspiration for our work can be found in the resources wiki.
+
 
 ## Tools/Libraries
 - [spacy.io](https://spacy.io/) python library for natural language processing supporting a plethora of languages, including [German](https://spacy.io/models/de)
+- [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/) python library for html parsing / crawling.
