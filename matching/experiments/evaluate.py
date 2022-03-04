@@ -22,8 +22,26 @@ websites = ["www.apotheken-umschau.de",
 string = "\n".join(["0: all websites [Default]"]+[f"{i+1}: {website}" for i, website in enumerate(websites)])
 global file_filter
 file_filter = None
-website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=9)
+website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites))
 
+# Print out number of already evaluated results per website
+website_count = [0 for _ in websites]
+set_evaluated = set([file[:-8] for file in os.listdir("results/evaluated")])
+for i, website in enumerate(websites):
+    with open(f"../../Datasets/{website}/header.json") as fp:
+        header = json.load(fp)
+        website_keys = header.keys()
+
+    with open("results/header.json") as fp:
+        header = json.load(fp)
+        set_matched = set()
+        for key in header:
+            if key[:-4] in website_keys:
+                for file in header[key]:
+                    set_matched.add(file.split("---")[0].split("/")[-1])
+    print(f"{website}: {len(set_evaluated & set_matched)}")
+
+# prepare the filtering per website
 if website_selection:
     with open(f"../../Datasets/{websites[website_selection-1]}/header.json") as fp:
         header = json.load(fp)
