@@ -13,6 +13,9 @@ for root, dirs, files in os.walk("results/matched"):
 
 
 def get_results_done(results):
+
+    res_dict = dict()
+
     for comb in results:
         all_positive = 0
         with open("results/matched/" + comb + ".results", 'r') as fp:
@@ -27,6 +30,11 @@ def get_results_done(results):
             for file in files:
                 if file.startswith(comb) and file.endswith("1.5.matches"):
                     print("\t".join(file.split('---')[1:]))
+                    _, v1, v2, _ = file.split('---')
+                    if v1 not in res_dict:
+                        res_dict[v1] = dict()
+                    if v2 not in res_dict[v1]:
+                        res_dict[v1][v2] = {"Precision": [], "Recall": []}
                     with open(os.path.join(root, file), 'r') as fp:
                         file_res = json.load(fp)
                     file_stats = []
@@ -37,7 +45,15 @@ def get_results_done(results):
 
                     print(file_stats)
                     print("Precision:", np.mean(file_stats))
+                    res_dict[v1][v2]["Precision"] = np.mean(file_stats)
                     print("Recall:", np.sum(file_stats) / float(all_positive))
+                    res_dict[v1][v2]["Recall"] = np.sum(file_stats) / float(all_positive)
+
+    for elem in res_dict:
+        for elem2 in res_dict[elem]:
+            print(elem, elem2)
+            print("Average precision:", np.mean(res_dict[elem][elem2]["Precision"]))
+            print("Average recall:", np.mean(res_dict[elem][elem2]["Recall"]))
 
 
 def get_matches():
