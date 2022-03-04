@@ -1,10 +1,40 @@
 import os
 import json
 from tkinter import *
+from tkinter.simpledialog import askinteger
 
 file_matchings = set()
 
 print(os.environ.get("USERNAME"))
+
+if not os.path.isdir("results/evaluated/"):
+    os.mkdir("results/evaluated/")
+
+websites = ["www.apotheken-umschau.de",
+            "www.behindertenbeauftragter.de",
+            "www.brandeins.de",
+            "www.lebenshilfe-main-taunus.de",
+            "www.mdr.de",
+            "www.sozialpolitik.com",
+            "www.stadt-koeln.de",
+            "www.taz.de",
+            "www.unsere-zeitung.at"]
+string = "\n".join(["0: all websites [Default]"]+[f"{i+1}: {website}" for i, website in enumerate(websites)])
+global file_filter
+file_filter = None
+website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=9)
+
+if website_selection:
+    with open(f"../../Datasets/{websites[website_selection-1]}/header.json") as fp:
+        header = json.load(fp)
+        website_keys = header.keys()
+    with open("results/header.json") as fp:
+        header = json.load(fp)
+        file_filter = []
+        for key in header:
+            if key[:-4] in website_keys:
+                for file in header[key]:
+                    file_filter.append(file.split("/")[-1])
 
 for root, dirs, files in os.walk("results/matched"):
     for file in files:
@@ -17,17 +47,17 @@ for root, dirs, files in os.walk("results/matched"):
 def get_matches():
     user = os.environ.get("USERNAME")
     all_files = sorted(list(file_matchings), reverse=(user == "malte"))
-
     for comb in all_files:
         matches = set()
         for root, dirs, files in os.walk("results/matched"):
             for file in files:
-                if file.endswith("1.5.matches") and file.startswith(comb):
-                    with open(os.path.join(root, file), 'r') as fp:
-                        doc_matches = json.load(fp)
-                        for ind, sentences, sim in doc_matches:
-                            sentence_tuple = (sentences[0], sentences[1])
-                            matches.add(sentence_tuple)
+                if (not file_filter) or (file in file_filter):
+                    if file.endswith("1.5.matches") and file.startswith(comb):
+                        with open(os.path.join(root, file), 'r') as fp:
+                            doc_matches = json.load(fp)
+                            for ind, sentences, sim in doc_matches:
+                                sentence_tuple = (sentences[0], sentences[1])
+                                matches.add(sentence_tuple)
 
         for match in matches:
             yield comb, match
@@ -85,13 +115,13 @@ buttonUndefined = Button(text="Undefined", command=undefined)
 
 
 def write_results(comb, res):
-    with open("results/matched/" + comb + ".results", 'w') as fp:
+    with open("results/evaluated/" + comb + ".results", 'w') as fp:
         json.dump(res, fp, indent=2, ensure_ascii=False)
 
 
 def load_results(comb):
     try:
-        with open("results/matched/" + comb + ".results", 'r') as fp:
+        with open("results/evaluated/" + comb + ".results", 'r') as fp:
             return json.load(fp)
     except FileNotFoundError:
         return dict()
