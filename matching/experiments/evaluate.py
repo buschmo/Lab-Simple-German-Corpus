@@ -20,8 +20,8 @@ websites = ["www.apotheken-umschau.de",
             "www.taz.de",
             "www.unsere-zeitung.at"]
 string = "\n".join(["0: all websites [Default]"]+[f"{i+1}: {website}" for i, website in enumerate(websites)])
-global file_filter
-file_filter = None
+global filtered_files
+filtered_files = None
 website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites))
 
 # Print out number of already evaluated results per website
@@ -48,11 +48,13 @@ if website_selection:
         website_keys = header.keys()
     with open("results/header.json") as fp:
         header = json.load(fp)
-        file_filter = []
+        filtered_files = []
         for key in header:
             if key[:-4] in website_keys:
                 for file in header[key]:
-                    file_filter.append(file.split("/")[-1])
+                    filtered_files.append(file.split("/")[-1])
+else:
+    filtered_files = os.listdir("results/matched")
 
 for root, dirs, files in os.walk("results/matched"):
     for file in files:
@@ -67,15 +69,13 @@ def get_matches():
     all_files = sorted(list(file_matchings), reverse=(user == "malte"))
     for comb in all_files:
         matches = set()
-        for root, dirs, files in os.walk("results/matched"):
-            for file in files:
-                if (not file_filter) or (file in file_filter):
-                    if file.endswith("1.5.matches") and file.startswith(comb):
-                        with open(os.path.join(root, file), 'r') as fp:
-                            doc_matches = json.load(fp)
-                            for ind, sentences, sim in doc_matches:
-                                sentence_tuple = (sentences[0], sentences[1])
-                                matches.add(sentence_tuple)
+        for file in filtered_files:
+            if file.endswith("1.5.matches") and file.startswith(comb):
+                with open(os.path.join("results/matched", file), 'r') as fp:
+                    doc_matches = json.load(fp)
+                    for ind, sentences, sim in doc_matches:
+                        sentence_tuple = (sentences[0], sentences[1])
+                        matches.add(sentence_tuple)
 
         for match in matches:
             yield comb, match
