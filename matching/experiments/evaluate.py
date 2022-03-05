@@ -2,6 +2,7 @@ import os
 import json
 from tkinter import *
 from tkinter.simpledialog import askinteger
+from matching.defaultvalues import *
 
 file_matchings = set()
 
@@ -21,14 +22,16 @@ websites = ["www.apotheken-umschau.de",
             "www.unsere-zeitung.at"]
 string = "\n".join(["0: all websites [Default]"]+[f"{i+1}: {website}" for i, website in enumerate(websites)])
 global filtered_files
-filtered_files = None
+
+window = Tk()
+
 website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites))
 
 # Print out number of already evaluated results per website
 website_count = [0 for _ in websites]
 set_evaluated = set([file[:-8] for file in os.listdir("results/evaluated")])
 for i, website in enumerate(websites):
-    with open(f"../../Datasets/{website}/header.json") as fp:
+    with open(os.path.join(dataset_location, f"{websites[website_selection-1]}/header.json")) as fp:
         header = json.load(fp)
         website_keys = header.keys()
 
@@ -43,7 +46,7 @@ for i, website in enumerate(websites):
 
 # prepare the filtering per website
 if website_selection:
-    with open(f"../../Datasets/{websites[website_selection-1]}/header.json") as fp:
+    with open(os.path.join(dataset_location, f"{websites[website_selection-1]}/header.json")) as fp:
         header = json.load(fp)
         website_keys = header.keys()
     with open("results/header.json") as fp:
@@ -81,7 +84,6 @@ def get_matches():
             yield comb, match
 
 
-window = Tk()
 
 match_generator = get_matches()
 
