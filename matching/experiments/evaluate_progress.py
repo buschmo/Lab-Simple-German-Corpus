@@ -1,6 +1,8 @@
 import os
 import json
 import numpy as np
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -65,7 +67,8 @@ def get_results_done(results):
             print("Average recall:", rec)
             print("F1 score:", f1)
             elem2_short = ""
-            if elem2 == "max_increasing_subsequence": elem2_short = "*"
+            if elem2 == "max_increasing_subsequence":
+                elem2_short = "*"
             perf = perf.append({"similarity_measure": elem, "matching_strategy": elem2_short,
                                 "precision": prec, "recall": rec, "f1": f1}, ignore_index=True)
 
@@ -74,7 +77,8 @@ def get_results_done(results):
     perf.plot.scatter('precision', 'recall', c='f1', s=100, cmap='plasma', fig=fig, ax=ax, edgecolor='k')
     fig.get_axes()[1].set_ylabel('f1')
     for idx, row in perf.iterrows():
-        ax.annotate(row['similarity_measure'] + row['matching_strategy'], row[['precision', 'recall']], fontsize=18, xytext=(10, -5),
+        ax.annotate(row['similarity_measure'] + row['matching_strategy'], row[['precision', 'recall']], fontsize=18,
+                    xytext=(10, -5),
                     textcoords='offset points')
     plt.show()
 
