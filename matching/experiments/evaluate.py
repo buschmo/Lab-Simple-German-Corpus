@@ -31,7 +31,7 @@ website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=le
 website_count = [0 for _ in websites]
 set_evaluated = set([file[:-8] for file in os.listdir("results/evaluated")])
 for i, website in enumerate(websites):
-    with open(os.path.join(dataset_location, f"{websites[website_selection-1]}/header.json")) as fp:
+    with open(os.path.join(dataset_location, f"{website}/header.json")) as fp:
         header = json.load(fp)
         website_keys = header.keys()
 
