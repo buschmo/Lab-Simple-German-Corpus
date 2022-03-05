@@ -18,8 +18,7 @@ websites = ["www.apotheken-umschau.de",
             "www.mdr.de",
             "www.sozialpolitik.com",
             "www.stadt-koeln.de",
-            "www.taz.de",
-            "www.unsere-zeitung.at"]
+            "www.taz.de"]
 string = "\n".join(["0: all websites [Default]"]+[f"{i+1}: {website}" for i, website in enumerate(websites)])
 global filtered_files
 
