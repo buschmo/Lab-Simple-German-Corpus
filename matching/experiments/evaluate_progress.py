@@ -1,6 +1,8 @@
 import os
 import json
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
 file_matchings = set()
 
@@ -13,7 +15,6 @@ for root, dirs, files in os.walk("results/matched"):
 
 
 def get_results_done(results):
-
     res_dict = dict()
 
     for comb in results:
@@ -52,11 +53,30 @@ def get_results_done(results):
                     print("Recall:", np.sum(file_stats) / float(all_positive))
                     res_dict[v1][v2]["Recall"].append(np.sum(file_stats) / float(all_positive))
 
+    perf = pd.DataFrame(columns=["similarity_measure", "matching_strategy", "precision", "recall", "f1"])
+
     for elem in res_dict:
         for elem2 in res_dict[elem]:
             print(elem, elem2)
-            print("Average precision:", np.mean(res_dict[elem][elem2]["Precision"]))
-            print("Average recall:", np.mean(res_dict[elem][elem2]["Recall"]))
+            prec = np.mean(res_dict[elem][elem2]["Precision"])
+            rec = np.mean(res_dict[elem][elem2]["Recall"])
+            f1 = 2 * (prec * rec) / (prec + rec)
+            print("Average precision:", prec)
+            print("Average recall:", rec)
+            print("F1 score:", f1)
+            elem2_short = ""
+            if elem2 == "max_increasing_subsequence": elem2_short = "*"
+            perf = perf.append({"similarity_measure": elem, "matching_strategy": elem2_short,
+                                "precision": prec, "recall": rec, "f1": f1}, ignore_index=True)
+
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    perf.plot.scatter('precision', 'recall', c='f1', s=100, cmap='plasma', fig=fig, ax=ax, edgecolor='k')
+    fig.get_axes()[1].set_ylabel('f1')
+    for idx, row in perf.iterrows():
+        ax.annotate(row['similarity_measure'] + row['matching_strategy'], row[['precision', 'recall']], fontsize=18, xytext=(10, -5),
+                    textcoords='offset points')
+    plt.show()
 
 
 def get_matches():
