@@ -18,7 +18,7 @@ def get_results_done(results):
 
     for comb in results:
         all_positive = 0
-        with open("results/matched/" + comb + ".results", 'r') as fp:
+        with open("results/evaluated/" + comb + ".results", 'r') as fp:
             res = json.load(fp)
         for elem in res:
             if elem != "finished":
@@ -60,8 +60,8 @@ def get_matches():
     results_done = set()
     results_started = set()
     for comb in file_matchings:
-        if os.path.exists(os.path.join("results/matched", comb + ".results")):
-            with open("results/matched/" + comb + ".results", 'r') as fp:
+        if os.path.exists(os.path.join("results/evaluated", comb + ".results")):
+            with open("results/evaluated/" + comb + ".results", 'r') as fp:
                 res = json.load(fp)
 
             if "finished" in res:
