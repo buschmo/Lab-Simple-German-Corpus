@@ -45,9 +45,12 @@ def get_results_done(results):
 
                     print(file_stats)
                     print("Precision:", np.mean(file_stats))
-                    res_dict[v1][v2]["Precision"] = np.mean(file_stats)
+                    if len(file_stats):
+                        res_dict[v1][v2]["Precision"].append(np.mean(file_stats))
+                    else:
+                        res_dict[v1][v2]["Precision"].append(0.0)
                     print("Recall:", np.sum(file_stats) / float(all_positive))
-                    res_dict[v1][v2]["Recall"] = np.sum(file_stats) / float(all_positive)
+                    res_dict[v1][v2]["Recall"].append(np.sum(file_stats) / float(all_positive))
 
     for elem in res_dict:
         for elem2 in res_dict[elem]:
