@@ -46,20 +46,24 @@ def get_results_done(results):
                         if val != None:
                             file_stats.append(val)
 
-                    print(file_stats)
-                    print("Precision:", np.mean(file_stats))
+                    # print(file_stats)
+                    # print("Precision:", np.mean(file_stats))
                     if len(file_stats):
                         res_dict[v1][v2]["Precision"].append(np.mean(file_stats))
                     else:
                         res_dict[v1][v2]["Precision"].append(0.0)
-                    print("Recall:", np.sum(file_stats) / float(all_positive))
-                    res_dict[v1][v2]["Recall"].append(np.sum(file_stats) / float(all_positive))
+                    # print("Recall:", np.sum(file_stats) / float(all_positive))
+                    if all_positive:
+                        res_dict[v1][v2]["Recall"].append(np.sum(file_stats) / float(all_positive))
+                    else:
+                        res_dict[v1][v2]["Recall"].append(0.0)
 
     perf = pd.DataFrame(columns=["similarity_measure", "matching_strategy", "precision", "recall", "f1"])
 
     for elem in res_dict:
         for elem2 in res_dict[elem]:
             print(elem, elem2)
+            print(res_dict[elem][elem2])
             prec = np.mean(res_dict[elem][elem2]["Precision"])
             rec = np.mean(res_dict[elem][elem2]["Recall"])
             f1 = 2 * (prec * rec) / (prec + rec)
