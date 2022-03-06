@@ -41,7 +41,6 @@ for i, website in enumerate(websites):
 
 # prepare the filtering per website
 website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites), initialvalue=0)
-print(website_selection)
 if website_selection:
     with open(os.path.join(dataset_location, f"{websites[website_selection - 1]}/header.json")) as fp:
         header = json.load(fp)
@@ -170,11 +169,11 @@ window.geometry('700x200')
 
 match_generator = get_matches()
 
-simpleLabel = StringVar()
-normalLabel = StringVar()
+simple_label = StringVar()
+normal_label = StringVar()
 
-currentComb = ""
-currentResults = dict()
+current_comb = ""
+current_results = dict()
 
 buttonYes = Button(text="Similar", command=correct)
 buttonNo = Button(text="Not similar", command=incorrect)
