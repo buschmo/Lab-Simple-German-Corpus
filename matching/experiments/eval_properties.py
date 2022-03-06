@@ -1,8 +1,48 @@
+import re
+
 import matching.utilities as util
 import numpy as np
 import matplotlib.pyplot as plt
+import json
+import os
+from matching.defaultvalues import dataset_location
+import pandas as pd
 
 
+def test_number_of_files():
+    with open("results/header.json") as fp:
+        header = json.load(fp)
+        print(f"Total number of evaluated files: {len(set(header.keys()))}")
+
+    total_simple_set = set()
+    total_normal_set = set()
+
+    for root, dirs, files in os.walk(dataset_location):
+        for name in files:
+            if name == 'header.json':
+                with open(os.path.join(root, name), 'r') as fp:
+                    data = json.load(fp)
+                root_set_simple = set()
+                root_set_normal = set()
+                for fname in data:
+                    if root.endswith('brandeins.de'):
+                        print(data[fname])
+                    if 'matching_files' not in data[fname]:
+                        continue
+                    if 'easy' not in data[fname]:
+                        continue
+                    if not data[fname]['easy']:
+                        continue
+                    total_simple_set.add(fname)
+                    root_set_simple.add(fname)
+                    total_normal_set = total_normal_set.union(set(data[fname]['matching_files']))
+                    root_set_normal = root_set_normal.union(set(data[fname]['matching_files']))
+
+                print(f"For source {root} we have {len(root_set_simple)} simple and {len(root_set_normal)} "
+                      f"normal articles")
+
+    print(
+        f"There are {len(total_simple_set)} Simple German and {len(total_normal_set)} normal German articles in the dataset.")
 
 
 def test_identical():
@@ -36,12 +76,23 @@ def test_identical():
     return percentage_correct, different_articles
 
 
-def test_lengths(article_pairs=None):
+def test_lengths(article_pairs=None, plot=False):
     if not article_pairs:
         _, article_pairs = test_identical()
 
+    stats = dict()
+
     len_simple = []
     len_normal = []
+
+    sents_simple = []
+    sents_normal = []
+
+    length_sents_simple = []
+    length_sents_normal = []
+
+    length_sents_words_simple = []
+    length_sents_words_normal = []
 
     words_simple = []
     words_normal = []
@@ -50,86 +101,163 @@ def test_lengths(article_pairs=None):
     len_words_normal = []
 
     for (art_simple, art_complex) in article_pairs:
+        url = art_simple.split('/')[-1][:10]
+        if url not in stats:
+            stats[url] = {"len_simple": [], "len_normal": [], "sents_simple": [],
+                          "sents_normal": [], "length_sents_simple": [],
+                          "length_sents_normal": [], "length_sents_words_simple": [],
+                          "length_sents_words_normal": [], "words_simple": [], "words_normal": [],
+                          "len_words_simple": [], "len_words_normal": []}
         with open(art_simple, 'r') as fp:
             article1 = fp.read()
             len_simple.append(len(article1))
+            stats[url]["len_simple"].append(len(article1))
+            article1 = article1.replace('\n', ' ')
+            article1 = re.sub('\s+', ' ', article1)
 
             nlp1 = util.nlp(article1)
+            sents_simple.append(len(list(nlp1.sents)))
+            stats[url]["sents_simple"].append(len(list(nlp1.sents)))
+            length_sents_simple.extend([len(str(x)) for x in nlp1.sents])
+            stats[url]["length_sents_simple"].extend([len(str(x)) for x in nlp1.sents])
+            length_sents_words_simple.extend([len(x) for x in nlp1.sents])
+            stats[url]["length_sents_words_simple"].extend([len(x) for x in nlp1.sents])
             words = 0
             for word in nlp1:
                 if word.is_punct:
                     continue
                 words += 1
                 len_words_simple.append(len(str(word)))
+                stats[url]["len_words_simple"].append(len(str(word)))
             words_simple.append(words)
+            stats[url]["words_simple"].append(words)
 
         with open(art_complex, 'r') as fp:
             article2 = fp.read()
             len_normal.append(len(article2))
+            stats[url]["len_normal"].append(len(article2))
+            article2 = article2.replace('\n', ' ')
+            article2 = re.sub('\s+', ' ', article2)
 
             nlp2 = util.nlp(article2)
+            sents_normal.append(len(list(nlp2.sents)))
+            stats[url]["sents_normal"].append(len(list(nlp2.sents)))
+            length_sents_normal.extend([len(str(x)) for x in nlp2.sents])
+            stats[url]["length_sents_normal"].extend([len(str(x)) for x in nlp2.sents])
+            length_sents_words_normal.extend([len(x) for x in nlp2.sents])
+            stats[url]["length_sents_words_normal"].extend([len(x) for x in nlp2.sents])
             words = 0
             for word in nlp2:
                 if word.is_punct:
                     continue
                 words += 1
                 len_words_normal.append(len(str(word)))
+                stats[url]["len_words_normal"].append(len(str(word)))
             words_normal.append(words)
+            stats[url]["words_normal"].append(words)
 
     print(f"The average length of the Simple German articles is {np.round(np.mean(len_simple), 1)} characters "
-          f"(std: {np.round(np.std(len_simple), 1)}).\n"
+          f"(std: {np.round(np.std(len_simple), 1)}, median: {np.round(np.median(len_simple), 1)}).\n"
           f"The average length of the standard German articles is {np.round(np.mean(len_normal), 1)} characters "
-          f"(std: {np.round(np.std(len_normal), 1)}).\n"
+          f"(std: {np.round(np.std(len_normal), 1)}, median: {np.round(np.median(len_normal), 1)}).\n"
           f"Only non-duplicate articles are taken into account.")
 
-    print(f"The average number of words in Simple German articles is {np.round(np.mean(words_simple),1)}. "
-          f"(std: {np.round(np.std(words_simple), 1)}).\n"
+    print(f"The average number of words in Simple German articles is {np.round(np.mean(words_simple), 1)}. "
+          f"(std: {np.round(np.std(words_simple), 1)}, median: {np.round(np.median(words_simple), 1)}).\n"
           f"The average number of words in standard German articles is {np.round(np.mean(words_normal), 1)} "
-          f"(std: {np.round(np.std(words_normal), 1)}).\n"
+          f"(std: {np.round(np.std(words_normal), 1)}, median: {np.round(np.median(words_normal), 1)}).\n"
           f"Only non-duplicate articles are taken into account.")
 
-    print(f"The average length of the words in Simple German articles is {np.round(np.mean(len_words_simple), 1)} characters "
-          f"(std: {np.round(np.std(len_words_simple), 1)}).\n"
-          f"The average length of the words in standard German articles is {np.round(np.mean(len_words_normal), 1)} characters "
-          f"(std: {np.round(np.std(len_words_normal), 1)}).\n"
-          f"Only non-duplicate articles are taken into account.")
+    print(
+        f"The average length of the words in Simple German articles is {np.round(np.mean(len_words_simple), 1)} characters "
+        f"(std: {np.round(np.std(len_words_simple), 1)}, median: {np.round(np.median(len_words_simple), 1)}).\n"
+        f"The average length of the words in standard German articles is {np.round(np.mean(len_words_normal), 1)} characters "
+        f"(std: {np.round(np.std(len_words_normal), 1)}, median: {np.round(np.median(len_words_normal), 1)}).\n"
+        f"Only non-duplicate articles are taken into account.")
 
-    combined_data = []
-    combined_data.append(len_simple)
-    combined_data.append(len_normal)
+    print(
+        f"The average number of sentences in Simple German articles is {np.round(np.mean(sents_simple), 1)} "
+        f"(std: {np.round(np.std(sents_simple), 1)}, median: {np.round(np.median(sents_simple), 1)}).\n"
+        f"The average number of sentences in standard German articles is {np.round(np.mean(sents_normal), 1)} "
+        f"(std: {np.round(np.std(sents_normal), 1)}, median: {np.round(np.median(sents_normal), 1)}).\n"
+        f"Only non-duplicate articles are taken into account.")
 
-    plt.hist(combined_data, bins=20, range=(0, 20000), label=['Simple German', 'Standard German'],
-             color=['red', 'blue'], stacked=False)
-    plt.legend()
-    plt.title('Length of German articles')
+    print(
+        f"The average length of sentences in Simple German articles is {np.round(np.mean(length_sents_simple), 1)} characters "
+        f"(std: {np.round(np.std(length_sents_simple), 1)}, median: {np.round(np.median(length_sents_simple), 1)}).\n"
+        f"The average length of sentences in standard German articles is {np.round(np.mean(length_sents_normal), 1)} characters "
+        f"(std: {np.round(np.std(length_sents_normal), 1)}, median: {np.round(np.median(length_sents_normal), 1)}).\n"
+        f"Only non-duplicate articles are taken into account.")
 
-    plt.show()
+    print(
+        f"The average length of sentences in words in Simple German articles is {np.round(np.mean(length_sents_words_simple), 1)} "
+        f"(std: {np.round(np.std(length_sents_words_simple), 1)}, median: {np.round(np.median(length_sents_words_simple), 1)}).\n"
+        f"The average length of sentences in words in standard German articles is {np.round(np.mean(length_sents_words_normal), 1)} "
+        f"(std: {np.round(np.std(length_sents_words_normal), 1)}, median: {np.round(np.median(length_sents_words_normal), 1)}).\n"
+        f"Only non-duplicate articles are taken into account.")
 
-    combined_data = []
-    combined_data.append(words_simple)
-    combined_data.append(words_normal)
+    """
+        \\begin{tabular}{lll}
+      \\toprule
+            name &    mask &    weapon \\\\
+      \\midrule
+         Raphael &     red &       sai \\\\
+       Donatello &  purple &  bo staff \\\\
+     \\bottomrule
+     \end{tabular}
+    """
 
-    plt.hist(combined_data, bins=20, range=(0, 3000), label=['Simple German', 'Standard German'],
-             color=['red', 'blue'], stacked=False)
-    plt.legend()
-    plt.title('Number of words in German articles')
+    print("\\begin{tabular}{lllllllllllll}")
+    print("\\toprule")
+    options = ["len_simple", "len_normal", "sents_simple",
+                          "sents_normal", "length_sents_simple",
+                          "length_sents_normal", "length_sents_words_simple",
+                          "length_sents_words_normal", "words_simple", "words_normal",
+                          "len_words_simple", "len_words_normal"]
+    print(" & ".join(options) + " \\\\")
+    for elem in stats.keys():
+        print(elem + " & " + " & ".join([str(np.round(np.mean(stats[elem][x]))) for x in options]) + " \\\\")
 
-    plt.show()
+    print("\\bottomrule\n\\end{tabular}")
 
-    combined_data = []
-    combined_data.append(len_words_simple)
-    combined_data.append(len_words_normal)
 
-    plt.hist(combined_data, range=(0,25), label=['Simple German', 'Standard German'],
-             color=['red', 'blue'], stacked=False)
-    plt.legend()
-    plt.title('Length of words in German articles')
 
-    plt.show()
+    if plot:
+        combined_data = [len_simple, len_normal]
+        plt.hist(combined_data, bins=20, range=(0, 20000), label=['Simple German', 'Standard German'],
+                 color=['red', 'blue'], stacked=False)
+        plt.legend()
+        plt.title('Length of German articles')
+
+        plt.show()
+
+        combined_data = []
+        combined_data.append(words_simple)
+        combined_data.append(words_normal)
+
+        plt.hist(combined_data, bins=20, range=(0, 3000), label=['Simple German', 'Standard German'],
+                 color=['red', 'blue'], stacked=False)
+        plt.legend()
+        plt.title('Number of words in German articles')
+
+        plt.show()
+
+        combined_data = []
+        combined_data.append(len_words_simple)
+        combined_data.append(len_words_normal)
+
+        plt.hist(combined_data, range=(0, 25), label=['Simple German', 'Standard German'],
+                 color=['red', 'blue'], stacked=False)
+        plt.legend()
+        plt.title('Length of words in German articles')
+
+        plt.show()
 
 
 if __name__ == '__main__':
     print("Working")
+
+    test_number_of_files()
 
     percentage_correct, different_arts = test_identical()
 

@@ -19,7 +19,7 @@ websites = ["www.apotheken-umschau.de",
             "www.sozialpolitik.com",
             "www.stadt-koeln.de",
             "www.taz.de"]
-string = "\n".join(["0: all websites [Default]"]+[f"{i+1}: {website}" for i, website in enumerate(websites)])
+string = "\n".join(["0: all websites [Default]"] + [f"{i + 1}: {website}" for i, website in enumerate(websites)])
 global filtered_files
 
 # Print out number of already evaluated results per website
@@ -43,7 +43,7 @@ for i, website in enumerate(websites):
 website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites), initialvalue=0)
 print(website_selection)
 if website_selection:
-    with open(os.path.join(dataset_location, f"{websites[website_selection-1]}/header.json")) as fp:
+    with open(os.path.join(dataset_location, f"{websites[website_selection - 1]}/header.json")) as fp:
         header = json.load(fp)
         website_keys = header.keys()
     with open("results/header.json") as fp:
@@ -86,35 +86,29 @@ def get_matches():
 
 
 def correct():
-    if simpleLabel.get() not in currentResults:
-        currentResults[simpleLabel.get()] = dict()
+    if simple_label.get() not in current_results:
+        current_results[simple_label.get()] = dict()
 
-    currentResults[simpleLabel.get()][normalLabel.get()] = True
-
-    write_results(currentComb, currentResults)
-
+    current_results[simple_label.get()][normal_label.get()] = True
+    write_results(current_comb, current_results)
     update_sentences()
 
 
 def incorrect():
-    if simpleLabel.get() not in currentResults:
-        currentResults[simpleLabel.get()] = dict()
+    if simple_label.get() not in current_results:
+        current_results[simple_label.get()] = dict()
 
-    currentResults[simpleLabel.get()][normalLabel.get()] = False
-
-    write_results(currentComb, currentResults)
-
+    current_results[simple_label.get()][normal_label.get()] = False
+    write_results(current_comb, current_results)
     update_sentences()
 
 
 def undefined():
-    if simpleLabel.get() not in currentResults:
-        currentResults[simpleLabel.get()] = dict()
+    if simple_label.get() not in current_results:
+        current_results[simple_label.get()] = dict()
 
-    currentResults[simpleLabel.get()][normalLabel.get()] = None
-
-    write_results(currentComb, currentResults)
-
+    current_results[simple_label.get()][normal_label.get()] = None
+    write_results(current_comb, current_results)
     update_sentences()
 
 
@@ -134,39 +128,39 @@ def load_results(comb):
 
 
 def update_sentences():
-    global currentComb, currentResults
+    global current_comb, current_results
     try:
         next_elem = next(match_generator)
-        nextSimple = next_elem[1][0]
-        nextNormal = next_elem[1][1]
-        newComb = next_elem[0]
+        next_simple = next_elem[1][0]
+        next_normal = next_elem[1][1]
+        new_comb = next_elem[0]
     except StopIteration:
-        newComb = "FINISHED"
-        nextSimple = "Finished Evaluating All Pairs"
-        nextNormal = "No more work to do :)"
+        new_comb = "FINISHED"
+        next_simple = "Finished Evaluating All Pairs"
+        next_normal = "No more work to do :)"
         buttonYes['state'] = 'disabled'
         buttonNo['state'] = 'disabled'
         buttonUndefined['state'] = 'disabled'
 
-    if currentComb != newComb:
-        if currentComb != "":
-            currentResults["finished"] = True
-            write_results(currentComb, currentResults)
-        currentComb = newComb
-        currentResults = load_results(currentComb)
+    if current_comb != new_comb:
+        if current_comb != "":
+            current_results["finished"] = True
+            write_results(current_comb, current_results)
+        current_comb = new_comb
+        current_results = load_results(current_comb)
 
-    if "finished" in currentResults:
+    if "finished" in current_results:
         update_sentences()
         return
 
-    if str(nextSimple) in currentResults:
-        if str(nextNormal) in currentResults[nextSimple]:
+    if str(next_simple) in current_results:
+        if str(next_normal) in current_results[next_simple]:
             print("Already evaluated!")
             update_sentences()
             return
 
-    simpleLabel.set(nextSimple)
-    normalLabel.set(nextNormal)
+    simple_label.set(next_simple)
+    normal_label.set(next_normal)
 
 
 window = Tk()
@@ -192,11 +186,11 @@ for i in range(3):
 
 update_sentences()
 
-labelSimpleSentence = Label(textvariable=simpleLabel, wraplength=700, bg='white', font=('Helvetica 14'))
+labelSimpleSentence = Label(textvariable=simple_label, wraplength=700, bg='white', font=('Helvetica 14'))
 
 labelSimpleSentence.grid(column=0, row=0, columnspan=3)
 
-labelNormalSentence = Label(textvariable=normalLabel, wraplength=700, bg='white', font=('Helvetica 14'))
+labelNormalSentence = Label(textvariable=normal_label, wraplength=700, bg='white', font=('Helvetica 14'))
 
 labelNormalSentence.grid(column=0, row=1, columnspan=3)
 
