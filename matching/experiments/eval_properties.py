@@ -25,8 +25,6 @@ def test_number_of_files():
                 root_set_simple = set()
                 root_set_normal = set()
                 for fname in data:
-                    if root.endswith('brandeins.de'):
-                        print(data[fname])
                     if 'matching_files' not in data[fname]:
                         continue
                     if 'easy' not in data[fname]:
@@ -122,15 +120,15 @@ def test_lengths(article_pairs=None, plot=False):
             stats[url]["length_sents_simple"].extend([len(str(x)) for x in nlp1.sents])
             length_sents_words_simple.extend([len(x) for x in nlp1.sents])
             stats[url]["length_sents_words_simple"].extend([len(x) for x in nlp1.sents])
-            words = 0
+            words = set()
             for word in nlp1:
                 if word.is_punct:
                     continue
-                words += 1
+                words.add(str(word))
                 len_words_simple.append(len(str(word)))
                 stats[url]["len_words_simple"].append(len(str(word)))
-            words_simple.append(words)
-            stats[url]["words_simple"].append(words)
+            words_simple.append(len(words))
+            stats[url]["words_simple"].append(len(words))
 
         with open(art_complex, 'r') as fp:
             article2 = fp.read()
@@ -146,15 +144,15 @@ def test_lengths(article_pairs=None, plot=False):
             stats[url]["length_sents_normal"].extend([len(str(x)) for x in nlp2.sents])
             length_sents_words_normal.extend([len(x) for x in nlp2.sents])
             stats[url]["length_sents_words_normal"].extend([len(x) for x in nlp2.sents])
-            words = 0
+            words = set()
             for word in nlp2:
                 if word.is_punct:
                     continue
-                words += 1
+                words.add(str(word))
                 len_words_normal.append(len(str(word)))
                 stats[url]["len_words_normal"].append(len(str(word)))
-            words_normal.append(words)
-            stats[url]["words_normal"].append(words)
+            words_normal.append(len(words))
+            stats[url]["words_normal"].append(len(words))
 
     print(f"The average length of the Simple German articles is {np.round(np.mean(len_simple), 1)} characters "
           f"(std: {np.round(np.std(len_simple), 1)}, median: {np.round(np.median(len_simple), 1)}).\n"
