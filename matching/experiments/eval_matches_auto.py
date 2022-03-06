@@ -38,13 +38,13 @@ sim_stat = stat_file.groupby(["Similarity measure"]).mean().round({'Avg. number 
 match_stat = stat_file.groupby(["Alignment strategy"]).mean().round({'Avg. number of matches':1, 'Avg. similarity of matches':2})
 thres_stat = stat_file.groupby(["sd-Threshold"]).mean().round({'Avg. number of matches':1, 'Avg. similarity of matches':2})
 
-print(sim_stat.to_latex(index=False,
+print(sim_stat.to_latex(index=True,
                         caption="Match statistics by similarity measure",
                         label="tab:sim-stat"))
-print(match_stat.to_latex(index=False,
+print(match_stat.to_latex(index=True,
                           caption="Match statistics by alignment strategy",
                           label="tab:align-stat"))
-print(thres_stat.to_latex(index=False,
+print(thres_stat.to_latex(index=True,
                           caption="Match statistics by threshold value",
                           label="tab:thres-stat"))
 

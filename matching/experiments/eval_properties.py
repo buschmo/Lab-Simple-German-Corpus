@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
     percentage_correct, different_arts = test_identical()
 
-    test_lengths(different_arts)
+    test_lengths(different_arts, plot=True)
 
 import sys
 

@@ -84,6 +84,9 @@ def get_results_done(results):
         ax.annotate(row['similarity_measure'] + row['matching_strategy'], row[['precision', 'recall']], fontsize=18,
                     xytext=(10, -5),
                     textcoords='offset points')
+
+    plt.savefig(f"../../figures/all_evaluated.png")
+
     plt.show()
 
 
