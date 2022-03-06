@@ -22,10 +22,6 @@ websites = ["www.apotheken-umschau.de",
 string = "\n".join(["0: all websites [Default]"]+[f"{i+1}: {website}" for i, website in enumerate(websites)])
 global filtered_files
 
-window = Tk()
-
-website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites))
-
 # Print out number of already evaluated results per website
 website_count = [0 for _ in websites]
 set_evaluated = set([file[:-8] for file in os.listdir("results/evaluated")])
@@ -44,6 +40,8 @@ for i, website in enumerate(websites):
     print(f"{website}: {len(set_evaluated & set_matched)}")
 
 # prepare the filtering per website
+website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites), initialvalue=0)
+print(website_selection)
 if website_selection:
     with open(os.path.join(dataset_location, f"{websites[website_selection-1]}/header.json")) as fp:
         header = json.load(fp)
@@ -55,8 +53,10 @@ if website_selection:
             if key[:-4] in website_keys:
                 for file in header[key]:
                     filtered_files.append(file.split("/")[-1])
-else:
+elif website_selection==0:
     filtered_files = os.listdir("results/matched")
+else:
+    exit()
 
 for root, dirs, files in os.walk("results/matched"):
     for file in files:
@@ -83,14 +83,6 @@ def get_matches():
             yield comb, match
 
 
-
-match_generator = get_matches()
-
-simpleLabel = StringVar()
-normalLabel = StringVar()
-
-currentComb = ""
-currentResults = dict()
 
 
 def correct():
@@ -126,11 +118,6 @@ def undefined():
     update_sentences()
 
 
-buttonYes = Button(text="Similar", command=correct)
-
-buttonNo = Button(text="Not similar", command=incorrect)
-
-buttonUndefined = Button(text="Undefined", command=undefined)
 
 
 def write_results(comb, res):
@@ -182,9 +169,22 @@ def update_sentences():
     normalLabel.set(nextNormal)
 
 
+window = Tk()
 window.title("Evaluate results of sentence matching")
 
 window.geometry('700x200')
+
+match_generator = get_matches()
+
+simpleLabel = StringVar()
+normalLabel = StringVar()
+
+currentComb = ""
+currentResults = dict()
+
+buttonYes = Button(text="Similar", command=correct)
+buttonNo = Button(text="Not similar", command=incorrect)
+buttonUndefined = Button(text="Undefined", command=undefined)
 
 for i in range(3):
     window.columnconfigure(i, weight=1, minsize=75)
