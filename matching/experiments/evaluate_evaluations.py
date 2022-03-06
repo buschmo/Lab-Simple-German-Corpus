@@ -97,6 +97,7 @@ def get_results_done(results, name):
         ax.annotate(row['similarity_measure'] + row['matching_strategy'], row[['precision', 'recall']], fontsize=12,
                     xytext=(10, -5),
                     textcoords='offset points')
+    plt.savefig(f"../../figures/{name[4:-3]}_evaluated.png")
     plt.show()
 
 websites = ["www.apotheken-umschau.de",
