@@ -40,6 +40,7 @@ for i, website in enumerate(websites):
     print(f"{website}: {len(set_evaluated & set_matched)}")
 
 # prepare the filtering per website
+window = Tk()
 website_selection = askinteger("Choose website", string, minvalue=0, maxvalue=len(websites), initialvalue=0)
 if website_selection:
     with open(os.path.join(dataset_location, f"{websites[website_selection - 1]}/header.json")) as fp:
@@ -162,7 +163,6 @@ def update_sentences():
     normal_label.set(next_normal)
 
 
-window = Tk()
 window.title("Evaluate results of sentence matching")
 
 window.geometry('700x200')

@@ -78,7 +78,6 @@ def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, r
         sent_list = [nlp(' '.join(
             [str(token) for token in sent if not token.is_punct])) for sent in sent_list]
 
-
     assert len(sent_list) == len(original_text_sents)
 
     return sent_list
@@ -470,6 +469,7 @@ def get_original_text_preprocessed(text, spacy_sentences=True):
         sent_list = [nlp(sent) for sent in text.split('\n')]
 
     return sent_list
+
 
 def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
                             spacy_sentences=True,
