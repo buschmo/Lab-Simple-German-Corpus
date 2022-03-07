@@ -15,7 +15,13 @@ In later work, such a (potentially expanded) corpus may be used to implement aut
 ## Resources
 Papers that we use as inspiration for our work can be found in the resources wiki.
 
+## Using this repository
+Currently the code is only running under PyCharm (or similar) due to the import's pathing.
+This will be reworked in future commits.
 
 ## Tools/Libraries
+All python packages needed to run the code can be found in the "requirements" file and installed using
+`pip install -r requirements`.
+We recommend using a virtualenv.
 - [spacy.io](https://spacy.io/) python library for natural language processing supporting a plethora of languages, including [German](https://spacy.io/models/de)
 - [BeautifulSoup4](https://www.crummy.com/software/BeautifulSoup/) python library for html parsing / crawling.
