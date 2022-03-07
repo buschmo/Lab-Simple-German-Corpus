@@ -37,14 +37,19 @@ def get_results_done(results):
                     if v1 not in res_dict:
                         res_dict[v1] = dict()
                     if v2 not in res_dict[v1]:
-                        res_dict[v1][v2] = {"Precision": [], "Recall": []}
+                        res_dict[v1][v2] = {"Precision": [], "Recall": [], "Correct sims": [], "Incorrect sims": []}
                     with open(os.path.join(root, file), 'r') as fp:
                         file_res = json.load(fp)
                     file_stats = []
-                    for _, (s1, s2), _ in file_res:
+
+                    for _, (s1, s2), sim in file_res:
                         val = res[str(s1)][str(s2)]
                         if val != None:
                             file_stats.append(val)
+                            if val:
+                                res_dict[v1][v2]["Correct sims"].append(sim)
+                            else:
+                                res_dict[v1][v2]["Incorrect sims"].append(sim)
 
                     # print(file_stats)
                     # print("Precision:", np.mean(file_stats))
@@ -58,7 +63,7 @@ def get_results_done(results):
                     else:
                         res_dict[v1][v2]["Recall"].append(0.0)
 
-    perf = pd.DataFrame(columns=["similarity_measure", "matching_strategy", "precision", "recall", "f1"])
+    perf = pd.DataFrame(columns=["similarity_measure", "matching_strategy", "precision", "recall", "f1", "sim correct matches", "sim incorrect matches"])
 
     for elem in res_dict:
         for elem2 in res_dict[elem]:
@@ -67,6 +72,8 @@ def get_results_done(results):
             prec = np.mean(res_dict[elem][elem2]["Precision"])
             rec = np.mean(res_dict[elem][elem2]["Recall"])
             f1 = 2 * (prec * rec) / (prec + rec)
+            sim_correct = np.mean(res_dict[elem][elem2]["Correct sims"])
+            sim_incorrect = np.mean(res_dict[elem][elem2]["Incorrect sims"])
             print("Average precision:", prec)
             print("Average recall:", rec)
             print("F1 score:", f1)
@@ -74,7 +81,11 @@ def get_results_done(results):
             if elem2 == "max_increasing_subsequence":
                 elem2_short = "*"
             perf = perf.append({"similarity_measure": elem, "matching_strategy": elem2_short,
-                                "precision": prec, "recall": rec, "f1": f1}, ignore_index=True)
+                                "precision": prec, "recall": rec, "f1": f1,
+                                "sim correct matches": sim_correct,
+                                "sim incorrect matches": sim_incorrect}, ignore_index=True)
+
+    print(perf.groupby(["similarity_measure"]).mean().round(2).to_latex(index=True))
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
@@ -89,6 +100,18 @@ def get_results_done(results):
 
     plt.show()
 
+    for elem in res_dict:
+        all_corr = []
+        all_incorr = []
+        for elem2 in res_dict[elem]:
+            all_corr.extend(res_dict[elem][elem2]["Correct sims"])
+            all_incorr.extend(res_dict[elem][elem2]["Incorrect sims"])
+
+        plt.hist(x = [all_corr, all_incorr], label=["Correct matches", "Incorrect matches"])
+        plt.title(elem)
+        plt.legend()
+        plt.savefig(f"../../figures/{elem}_match_stats.png")
+        plt.show()
 
 def get_matches():
     results_done = set()
