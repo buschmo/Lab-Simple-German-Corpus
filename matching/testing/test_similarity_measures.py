@@ -2,27 +2,19 @@ import spacy
 
 import matplotlib.pyplot as plt
 
+import numpy as np
+
 from matching.SimilarityMeasures import *
+
+np.random.seed(42)
+
+evals = 100000
 
 if __name__ == '__main__':
 
     import matching.DocumentMatching as doc_matching
 
     nlp = spacy.load('de_core_news_lg')
-
-    # doc1 = nlp("Warum ist die Banane krumm? Weil niemand in den Urwald zog und die Banane gerade bog. ")
-    # doc2 = nlp("Was hat dafür gesorgt, dass die Banane krumm wurde? Keiner besuchte den Regenwald, um die Frucht zu "
-    #            "begradigen.")
-    #
-    # for sent in doc1.sents:
-    #     for sent2 in doc2.sents:
-    #         print(sent)
-    #         print(sent2)
-    #         print("CWASA:", CWASA_similarity(sent, sent2))
-    #         print("avg:", average_similarity(sent, sent2))
-    #         print("cos:", cosine_similarity(sent, sent2))
-    #         print("max:", max_similarity(sent, sent2))
-    #         print("Hungarian", max_matching_similarity(sent, sent2))
 
     n = 4
 
@@ -41,6 +33,8 @@ if __name__ == '__main__':
     n_gram_sims = []
     word_tf_idf_sims = []
     hungarian_sims = []
+
+    np.random.shuffle(article_pairs)
 
     for nr, (art1, art2) in enumerate(article_pairs):
 
@@ -88,126 +82,126 @@ if __name__ == '__main__':
                 n_gram_sims.append(n_gram_similarity(sent1, sent2, tf1, tf2, idf, n))
                 word_tf_idf_sims.append(bag_of_words_tf_idf_similarity(sent1, sent2, tf_word1, tf_word2, word_idf))
 
-        if len(word_tf_idf_sims) > 50000:
+        if len(word_tf_idf_sims) > evals:
             break
 
-    print("CWASA", cwasa_sims[:100])
-    print("AVG", avg_sims[:100])
-    print("COS", cos_sims[:100])
-    print("MAX", max_sims[:100])
-    print("N-GRAM", n_gram_sims[:100])
-    print("N-GRAM", word_tf_idf_sims[:100])
+    # print("CWASA", cwasa_sims[:100])
+    # print("AVG", avg_sims[:100])
+    # print("COS", cos_sims[:100])
+    # print("MAX", max_sims[:100])
+    # print("N-GRAM", n_gram_sims[:100])
+    # print("N-GRAM", word_tf_idf_sims[:100])
 
-    plt.hist(cwasa_sims, 50)
+    plt.hist(cwasa_sims[:evals], 50)
     plt.yscale('log')
     plt.title("CWASA DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cwasa_sims)}')
+    plt.ylabel(f'total ocurrences of {len(cwasa_sims[:evals])}')
     plt.savefig("../figures/CWASA_distance_log.png")
     plt.show()
 
-    plt.hist(avg_sims, 50)
+    plt.hist(avg_sims[:evals], 50)
     plt.yscale('log')
     plt.title("AVERAGE DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(avg_sims)}')
+    plt.ylabel(f'total ocurrences of {len(avg_sims[:evals])}')
     plt.savefig("../figures/avg_sim_distance_log.png")
     plt.show()
 
-    plt.hist(cos_sims, 50)
+    plt.hist(cos_sims[:evals], 50)
     plt.yscale('log')
     plt.title("COSINE DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cos_sims)}')
+    plt.ylabel(f'total ocurrences of {len(cos_sims[:evals])}')
     plt.savefig("../figures/cos_sim_distance_log.png")
     plt.show()
 
-    plt.hist(max_sims, 50)
+    plt.hist(max_sims[:evals], 50)
     plt.yscale('log')
     plt.title("MAX DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(max_sims)}')
+    plt.ylabel(f'total ocurrences of {len(max_sims[:evals])}')
     plt.savefig("../figures/max_sim_distance_log.png")
     plt.show()
 
-    plt.hist(n_gram_sims, 50)
+    plt.hist(n_gram_sims[:evals], 50)
     plt.yscale('log')
     plt.title("N-GRAM DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(n_gram_sims)}')
+    plt.ylabel(f'total ocurrences of {len(n_gram_sims[:evals])}')
     plt.savefig("../figures/n_gram_distance_log.png")
     plt.show()
 
-    plt.hist(word_tf_idf_sims, 50)
+    plt.hist(word_tf_idf_sims[:evals], 50)
     plt.yscale('log')
     plt.title("WORD-TF-IDF DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims)}')
+    plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims[:evals])}')
     plt.savefig("../figures/bag_of_words_distance_log.png")
     plt.show()
 
-    plt.hist(hungarian_sims, 50)
+    plt.hist(hungarian_sims[:evals], 50)
     plt.yscale('log')
     plt.title("MAXIMUM MATCHING DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(hungarian_sims)}')
+    plt.ylabel(f'total ocurrences of {len(hungarian_sims[:evals])}')
     plt.savefig("../figures/maximum_matching_distance_log.png")
     plt.show()
 
 
     ############## non-log images
 
-    plt.hist(cwasa_sims, 50)
+    plt.hist(cwasa_sims[:evals], 50)
     # plt.yscale('log')
     plt.title("CWASA DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cwasa_sims)}')
+    plt.ylabel(f'total ocurrences of {len(cwasa_sims[:evals])}')
     plt.savefig("../figures/CWASA_distance.png")
     plt.show()
 
-    plt.hist(avg_sims, 50)
+    plt.hist(avg_sims[:evals], 50)
     # plt.yscale('log')
     plt.title("AVERAGE DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(avg_sims)}')
+    plt.ylabel(f'total ocurrences of {len(avg_sims[:evals])}')
     plt.savefig("../figures/avg_sim_distance.png")
     plt.show()
 
-    plt.hist(cos_sims, 50)
+    plt.hist(cos_sims[:evals], 50)
     # plt.yscale('log')
     plt.title("COSINE DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(cos_sims)}')
+    plt.ylabel(f'total ocurrences of {len(cos_sims[:evals])}')
     plt.savefig("../figures/cos_sim_distance.png")
     plt.show()
 
-    plt.hist(max_sims, 50)
+    plt.hist(max_sims[:evals], 50)
     # plt.yscale('log')
     plt.title("MAX DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(max_sims)}')
+    plt.ylabel(f'total ocurrences of {len(max_sims[:evals])}')
     plt.savefig("../figures/max_sim_distance.png")
     plt.show()
 
-    plt.hist(n_gram_sims, 50)
+    plt.hist(n_gram_sims[:evals], 50)
     # plt.yscale('log')
     plt.title("N-GRAM DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(n_gram_sims)}')
+    plt.ylabel(f'total ocurrences of {len(n_gram_sims[:evals])}')
     plt.savefig("../figures/n_gram_distance.png")
     plt.show()
 
-    plt.hist(word_tf_idf_sims, 50)
+    plt.hist(word_tf_idf_sims[:evals], 50)
     # plt.yscale('log')
     plt.title("WORD-TF-IDF DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims)}')
+    plt.ylabel(f'total ocurrences of {len(word_tf_idf_sims[:evals])}')
     plt.savefig("../figures/bag_of_words_distance.png")
     plt.show()
 
-    plt.hist(hungarian_sims, 50)
+    plt.hist(hungarian_sims[:evals], 50)
     plt.title("MAXIMUM MATCHING DISTANCE")
     plt.xlabel('distance')
-    plt.ylabel(f'total ocurrences of {len(hungarian_sims)}')
+    plt.ylabel(f'total ocurrences of {len(hungarian_sims[:evals])}')
     plt.savefig("../figures/maximum_matching_distance.png")
     plt.show()
