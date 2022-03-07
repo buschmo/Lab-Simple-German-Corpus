@@ -70,29 +70,38 @@ def get_results_done(results, name):
                     else:
                         res_dict[v1][v2]["Recall"].append(0.0)
 
-    perf = pd.DataFrame(columns=["similarity_measure", "matching_strategy", "precision", "recall", "f1"])
+    perf = pd.DataFrame(columns=["similarity_measure", "matching_strategy", "precision", "recall", "F1"])
 
     for elem in res_dict:
         for elem2 in res_dict[elem]:
             print(elem, elem2)
             prec = np.mean(res_dict[elem][elem2]["Precision"])
             rec = np.mean(res_dict[elem][elem2]["Recall"])
-            f1 = 2 * (prec * rec) / (prec + rec)
+            F1 = 2 * (prec * rec) / (prec + rec)
             print("Average precision:", prec)
             print("Average recall:", rec)
-            print("F1 score:", f1)
+            print("F1 score:", F1)
             elem2_short = ""
             if elem2 == "max_increasing_subsequence":
                 elem2_short = "*"
-            perf = perf.append({"similarity_measure": elem, "matching_strategy": elem2_short,
-                                "precision": prec, "recall": rec, "f1": f1}, ignore_index=True)
+
+            sent_sim_name = elem
+            if elem == "max_matching":
+                sent_sim_name = "bipartite"
+            elif elem == "bag_of_words":
+                sent_sim_name = "bag of words"
+            elif elem == "n_gram":
+                sent_sim_name = "4-gram"
+                
+            perf = perf.append({"similarity_measure": sent_sim_name, "matching_strategy": elem2_short,
+                                "precision": prec, "recall": rec, "F1": F1}, ignore_index=True)
 
     fig, ax = plt.subplots(figsize=(10, 10))
 
     plt.title(f"Evaluation of {len(results)} files from source {name}")
 
-    perf.plot.scatter('precision', 'recall', c='f1', s=100, cmap='plasma', fig=fig, ax=ax, edgecolor='k')
-    fig.get_axes()[1].set_ylabel('f1')
+    perf.plot.scatter('precision', 'recall', c='F1', s=100, cmap='plasma', fig=fig, ax=ax, edgecolor='k')
+    fig.get_axes()[1].set_ylabel('F1')
     for idx, row in perf.iterrows():
         ax.annotate(row['similarity_measure'] + row['matching_strategy'], row[['precision', 'recall']], fontsize=12,
                     xytext=(10, -5),
