@@ -10,8 +10,11 @@ def crawl_site(easy_url, base_url):
                        string=re.compile("Standardsprache", flags=re.I))["href"],
         base_url
     )
-    normal_soup = utl.read_soup(normal_url)
-    utl.save_parallel_soup(normal_soup, normal_url, easy_soup, easy_url)
+    if normal_url:
+        normal_soup = utl.read_soup(normal_url)
+        utl.save_parallel_soup(normal_soup, normal_url, easy_soup, easy_url)
+    else:
+        utl.log_missing_url(easy_url)
 
 
 def crawling(base_url):

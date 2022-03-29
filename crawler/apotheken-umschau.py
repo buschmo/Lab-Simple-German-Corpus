@@ -21,11 +21,14 @@ def crawl_site(easy_url, base_url):
     normals_urls = [utl.parse_url(tag["href"], base_url)
                     for tag in easy_url_tags]
 
-    for normal_url in normals_urls:
-        normal_soup = utl.read_soup(normal_url)
+    if len(normals_urls):
+        for normal_url in normals_urls:
+            normal_soup = utl.read_soup(normal_url)
 
-        utl.save_parallel_soup(normal_soup, normal_url,
-                               easy_soup, easy_url)
+            utl.save_parallel_soup(normal_soup, normal_url,
+                                easy_soup, easy_url)
+    else:
+        utl.log_missing_url(easy_url)
 
 
 def crawling(base_url):
