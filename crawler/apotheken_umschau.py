@@ -78,8 +78,8 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
     return article_tag
 
 
+base_url = "https://www.apotheken-umschau.de/"
 def main():
-    base_url = "https://www.apotheken-umschau.de/"
     crawling(base_url)
     utl.parse_soups(base_url, parser)
 

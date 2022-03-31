@@ -143,8 +143,8 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
     return result
 
 
+base_url = "https://www.mdr.de/"
 def main():
-    base_url = "https://www.mdr.de/"
     crawling(base_url)
     utl.parse_soups(base_url, parser)
 

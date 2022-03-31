@@ -78,8 +78,8 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
     return result
 
 
+base_url = "https://www.behindertenbeauftragter.de/"
 def main():
-    base_url = "https://www.behindertenbeauftragter.de/"
     crawling(base_url)
     utl.parse_soups(base_url, parser)
 
