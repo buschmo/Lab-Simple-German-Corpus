@@ -1,5 +1,5 @@
 #!/usr/bin/python3.10
-import utilities as utl
+import crawler.utilities as utl
 import re
 from bs4 import BeautifulSoup
 

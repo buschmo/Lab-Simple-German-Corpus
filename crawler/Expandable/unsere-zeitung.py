@@ -1,4 +1,4 @@
-import utilities as utl
+import crawler.utilities as utl
 import re
 
 

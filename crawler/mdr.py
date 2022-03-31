@@ -1,5 +1,5 @@
 #!/usr/bin/python3.10
-import utilities as utl
+import crawler.utilities as utl
 import re
 from bs4 import BeautifulSoup
 
@@ -145,7 +145,7 @@ def parser(soup: BeautifulSoup) -> BeautifulSoup:
 
 def main():
     base_url = "https://www.mdr.de/"
-    # crawling(base_url)
+    crawling(base_url)
     utl.parse_soups(base_url, parser)
 
 

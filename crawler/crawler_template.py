@@ -1,4 +1,4 @@
-import utilities as utl
+import crawler.utilities as utl
 
 
 def crawl_site(easy_url: str, base_url: str):

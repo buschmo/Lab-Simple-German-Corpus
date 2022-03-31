@@ -1,4 +1,4 @@
-import utilities as utl
+import crawler.utilities as utl
 import re
 from bs4 import BeautifulSoup
 from pathlib import Path
@@ -145,7 +145,7 @@ def parse_soups(base_url: str):
 
 def main():
     base_url = "https://www.brandeins.de/"
-    # crawling(base_url)
+    crawling(base_url)
     parse_soups(base_url)
 
 
