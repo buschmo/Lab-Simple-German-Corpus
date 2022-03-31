@@ -136,6 +136,9 @@ def remove_header_entry(url:str, main_key:str):
     
 
 def get_names_from_url(url: str) -> [str, str]:
+    if not url.startswith("http"):
+        print(f"{url} did not specify a scheme, thus it will be added.")
+        url = "https://" + url
     parsed_url = urllib.parse.urlparse(url)
     foldername = parsed_url.netloc
     filename = parsed_url.netloc + parsed_url.path.replace("/", "__")
