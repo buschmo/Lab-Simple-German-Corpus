@@ -6,7 +6,7 @@ import json
 import os
 
 
-def crawl_site(url, base_url):
+def crawl_site(url):
     soup = utl.read_soup(url)
 
     soup_main = soup.find(["main"])
@@ -17,12 +17,17 @@ def crawl_site(url, base_url):
     if contains_easy_parts:
         filepath = utl.get_crawled_path_from_url(url)
         utl.save_soup(soup, filepath)
-        utl.save_header(filepath, url, filepath)
+
+        easy_filepath = utl.get_crawled_path_from_url(url + "_easy")
+        utl.save_header(easy_filepath, url, easy_filepath)
+
+        normal_filepath = utl.get_crawled_path_from_url(url + "_normal")
+        utl.save_header(normal_filepath, url, normal_filepath)
     else:
         utl.log_missing_url(url)
 
 
-def crawling(base_url):
+def crawling():
     easy_url = "https://www.brandeins.de/themen/rubriken/leichte-sprache"
 
     soup = utl.read_soup(easy_url)
@@ -37,54 +42,31 @@ def crawling(base_url):
         crawl_site(url, base_url)
 
 
-def parse_soups(base_url: str):
+def parse_soups():
     """ Contrary to other webpages brandeins needs it's own parse_soup method
     """
-    headerpath = utl.get_headerpath_from_url(base_url)
-    headerpath_old = Path(headerpath.parent, "header_old.json")
-    if not os.path.exists(headerpath_old):
-        header = utl.load_header(base_url)
-        with open(headerpath_old, "w", encoding="utf-8") as f:
-            json.dump(header, f, indent=4)
-    else:
-        with open(headerpath_old, "r") as f:
-            header = json.load(f)
-    foldername, _ = utl.get_names_from_url(base_url)
+    output_folder = utl.get_parsed_path_from_url(base_url).parent
+    if not os.path.exists(output_folder):
+        os.mkdir(output_folder)
 
-    output_folder = utl.get_parsed_path_from_url(base_url)
-    if not os.path.exists(output_folder.parent):
-        os.mkdir(output_folder.parent)
+    # new_header = {}
+    header = utl.load_header(base_url)
 
-    new_header = {}
-    
-    for filename in header.keys():
-        # ignore special case
+    for key in header.keys():
+        if not header[key]["easy"]:
+            continue
+        else:
+            url = header[key]["url"]
+            filename = utl.get_crawled_path_from_url(url)
+
         if filename == "www.brandeins.de__magazine__brand-eins-wirtschaftsmagazin__2019__qualitaet__ich-tu-mir-so-leid-deswegen-will-ich-jetzt-zaubern-lernen.html":
+            # ignore special case
             continue
 
-        # check if file has not been parsed
-        url = header[filename]["url"]
         easy_filepath = utl.get_parsed_path_from_url(url + "_easy")
         normal_filepath = utl.get_parsed_path_from_url(url + "_normal")
 
-        # save new header information
-        new_header[easy_filepath.stem] = {
-            "url": header[filename]["url"],
-            "crawl_date": header[filename]["crawl_date"],
-            "easy": True,
-            "publication_date": header[filename]["publication_date"],
-            "matching_files": [normal_filepath.stem]
-        }
-
-        new_header[normal_filepath.stem] = {
-            "url": header[filename]["url"],
-            "crawl_date": header[filename]["crawl_date"],
-            "easy": False,
-            "publication_date": header[filename]["publication_date"],
-            "matching_files": [easy_filepath.stem]
-        }
-
-        # parse contents
+        # ===== Parse contents =====
         soup = utl.read_soup(url)
 
         texts = soup.find_all(
@@ -102,10 +84,10 @@ def parse_soups(base_url: str):
 
         # empty texts are not saved
         if (not text_easy) or (not text_normal):
-            del new_header[easy_filepath.stem]
-            del new_header[normal_filepath.stem]
+            print(f"NO CONTENT {url}")
             continue
-        
+
+        # ===== Save parsed contents =====
         with open(easy_filepath, "w", encoding="utf-8") as f:
             for paragraph in text_easy:
                 text = paragraph.get_text()
@@ -138,15 +120,13 @@ def parse_soups(base_url: str):
                         f.seek(f.tell()-1)
                     f.write(f"{sentence}\n")
 
-    with open(utl.get_headerpath_from_url(base_url), "w", encoding="utf-8") as f:
-        json.dump(new_header, f, indent=4)
-
-
 
 base_url = "https://www.brandeins.de/"
+
+
 def main():
-    crawling(base_url)
-    parse_soups(base_url)
+    crawling()
+    parse_soups()
 
 
 if __name__ == '__main__':

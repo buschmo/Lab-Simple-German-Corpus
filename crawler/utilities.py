@@ -19,6 +19,8 @@ SCRAPE_DELAY = 5
 
 LAST_SCRAPE = None
 
+from_archive=False
+
 
 def read_soup(url: str):
     filepath = get_crawled_path_from_url(url)
@@ -56,7 +58,7 @@ def save_soup(soup, filepath: Path):
     #     log_resaving_file(filepath)
 
 
-def load_header(url):
+def load_header(url:str):
     headerpath = get_headerpath_from_url(url)
     # save header information
     if os.path.exists(headerpath):
@@ -136,6 +138,9 @@ def remove_header_entry(url:str, main_key:str):
     
 
 def get_names_from_url(url: str) -> [str, str]:
+    if from_archive:
+        if "//web.archive.org/web/" in url:
+            url = re.sub("\w+://web.archive.org/web/\d+/","", url)
     if not url.startswith("http"):
         print(f"{url} did not specify a scheme, thus it will be added.")
         url = "https://" + url
@@ -144,6 +149,10 @@ def get_names_from_url(url: str) -> [str, str]:
     filename = parsed_url.netloc + parsed_url.path.replace("/", "__")
     if not filename.endswith(".html"):
         filename += ".html"
+    if filename.endswith("__.html"):
+        filename = filename[:-len("__.html")] + ".html"
+    if filename.startswith("www."):
+        filename = filename[4:]
     if not foldername.startswith("www."):
         foldername = "www." + foldername
     return foldername, filename
@@ -151,22 +160,25 @@ def get_names_from_url(url: str) -> [str, str]:
 
 def get_headerpath_from_url(url: str) -> Path:
     foldername, _ = get_names_from_url(url)
-    return Path("../Datasets", foldername, "header.json")
+    if from_archive:
+        return Path("Datasets", foldername, "archive_header.json")
+    else:
+        return Path("Datasets", foldername, "header.json")
 
 
 def get_log_path_from_url(url: str):
     foldername, _ = get_names_from_url(url)
-    return Path("../Datasets", foldername, "log.txt")
+    return Path("Datasets", foldername, "log.txt")
 
 
 def get_parsed_path_from_url(url: str) -> Path:
     foldername, filename = get_names_from_url(url)
-    return Path("../Datasets", foldername, "parsed", filename + ".txt")
+    return Path("Datasets", foldername, "parsed", filename + ".txt")
 
 
 def get_crawled_path_from_url(url: str) -> Path:
     foldername, filename = get_names_from_url(url)
-    return Path("../Datasets", foldername, "crawled", filename)
+    return Path("Datasets", foldername, "crawled", filename)
 
 
 def get_soup_from_url(url: str):
@@ -239,7 +251,7 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
             os.makedirs(path.parent)
 
         with open(path, "w", encoding="utf-8") as f:
-            for i, tag in enumerate(parsed_content.contents):
+            for tag in parsed_content.contents:
                 text = tag.get_text()
                 # clean up of text
                 text = re.sub("\s+", " ", text)
@@ -247,8 +259,7 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
                 # # remove empty lines
                 if not text:
                     continue
-                for j, sentence in enumerate(re.split(r"([?.:!] )", text)):
-                    # print(f"{i}-{j}#{sentence}")
+                for sentence in re.split(r"([?.:!] )", text):
                     # Move punctuation to the correct position, i.e. the previous line
                     if sentence in [". ", ": ", "? ", "! "]:
                         f.seek(f.tell()-1)
