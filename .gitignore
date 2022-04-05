@@ -3,4 +3,5 @@
 __pycache__
 matching/defaultvalues.py
 matching/experiments/results
-Datasets
+Datasets/*/**
+!Datasets/*/archive_header.json
