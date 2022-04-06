@@ -91,7 +91,7 @@ def main(from_archive: bool = False):
     else:
         # TODO Implement crawling directly from the website
         print("Unaccounted case.")
-    return
+
     for name in crawler.__all__:
         website_module = getattr(crawler, name)
         print(f"Parsing {website_module.base_url}")
