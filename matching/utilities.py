@@ -49,26 +49,31 @@ def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, r
         sent_list = [sent for sent in text.split('\n')]
 
     if remove_hyphens:
-        sent_list = [re.sub('-[A-Z]', _kill_hyphen, sent) for sent in sent_list]
+        sent_list = [re.sub('-[A-Z]', _kill_hyphen, sent)
+                     for sent in sent_list]
 
     if remove_gender:
         sent_list = [re.sub('\*in(nen)?', '', sent) for sent in sent_list]
         sent_list = [re.sub(':in(nen)?', '', sent) for sent in sent_list]
         sent_list = [re.sub('_in(nen)?', '', sent) for sent in sent_list]
-        sent_list = [re.sub('[a-z]In(nen)?', _kill_binnenI, sent) for sent in sent_list]
+        sent_list = [re.sub('[a-z]In(nen)?', _kill_binnenI, sent)
+                     for sent in sent_list]
 
     if lowercase:
         sent_list = [sent.lower() for sent in sent_list]
 
     if lemmatization:
-        sent_list = [' '.join([word.lemma_ for word in nlp(sent)]) for sent in sent_list]
+        sent_list = [' '.join([word.lemma_ for word in nlp(sent)])
+                     for sent in sent_list]
 
     if remove_stopwords:
         nlp_text = nlp(text)
+        # TODO This is removable
         text = ' '.join(
             [word.text for word in nlp_text if word.text not in stopwords])
 
-        sent_list = [' '.join(word.text for word in sent if word.text not in stopwords) for sent in sent_list]
+        sent_list = [' '.join(
+            word.text for word in sent if word.text not in stopwords) for sent in sent_list]
 
     sent_list = [re.sub(' +', ' ', sent) for sent in sent_list]
 
@@ -423,11 +428,8 @@ def weighted(elem, tf: dict[str, float], idf: dict[str, float]) -> float:
     return tf[str_elem] * idf[str_elem]
 
 
-def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) -> tuple[str, str,
-                                                                                                    list[Doc],
-                                                                                                    list[Doc],
-                                                                                                    list[Doc], list[
-                                                                                                        Doc]]:
+def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) \
+        -> tuple[str, str, list[Doc], list[Doc], list[Doc], list[Doc]]:
     """
     Generator function that iteratively returns preprocessed articles.
 

@@ -22,6 +22,7 @@ def n_gram_similarity(sentence1: Doc, sentence2: Doc, tf1: dict[str, float], tf2
     Returns:
         A similarity value for the sentences between 0 and 1
     """
+    # str() to calculate n-grams
     n_1 = util.make_n_grams(str(sentence1), n)
     n_2 = util.make_n_grams(str(sentence2), n)
 

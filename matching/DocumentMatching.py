@@ -6,7 +6,8 @@ import matching.SimilarityMeasures as measures
 
 def match_documents(matching: str, simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
         -> list[list[tuple[str, str], tuple[str, str]]]:
-
+    """ Wrapper for choosing max matching or max increasing subsequence matching
+    """
     if matching == "max":
         return match_documents_max(simple_doc, normal_doc, match_matrix, threshold, sd_threshold)
     elif matching == "max_increasing_subsequence":
@@ -15,7 +16,7 @@ def match_documents(matching: str, simple_doc: list[Doc], normal_doc: list[Doc],
 
 # TODO: Add possibility to link original sentences to preprocessed ones!
 def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
-        -> list[list[tuple[str, str], tuple[str, str], float]]:
+        -> list[list[tuple[int, int], tuple[str, str], float]]:
     """
     Calculates maximum matches for each simple sentence and returns the list of matched sentences.
     Please note that this only allows 1-to-n-matching. Taken from CATS
@@ -29,6 +30,7 @@ def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matr
 
     Returns:
         A list of matched sentences with their indices and their similarity value
+        Form: ((i,j), (simple_i, normal_j), distance)
     """
 
     if sd_threshold > 0.0:
@@ -44,7 +46,7 @@ def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matr
 
 
 def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
-        -> list[list[tuple[str, str], tuple[str, str], float]]:
+        -> list[list[tuple[int, int], tuple[str, str], float]]:
     """
     Calculates maximum matches for each simple sentence, then returns the longest increasing subsequence
     (assumes order of information is kept)
@@ -59,6 +61,7 @@ def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc
 
     Returns:
         A list of matched sentences with their indices and their similarity value
+        Form: ((i,j), (simple_i, normal_j), distance)
     """
 
     if sd_threshold > 0.0:
@@ -85,15 +88,20 @@ def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc
     last_found = -1
 
     for i, elem in enumerate(simple_indices):
+        # if simple index appears in longest subseq
         if elem in simple_longest_indices:
             assert match_matrix[elem][normal_indices[i]] > threshold
             final_matching.append((elem, normal_indices[i]))
             last_found += 1
             start_border = normal_longest_indices[last_found]
+            # if not all have been found yet
             if last_found < len(normal_longest_indices) - 1:
+                # border interval lies between two indices
                 end_border = normal_longest_indices[last_found + 1]
             else:
+                # border interval lies between last index and end
                 end_border = len(match_matrix[0]) - 1
+        # align unaligned snippet (see CATS for details)
         else:
             max_val_ind = np.argmax(
                 match_matrix[i][start_border:end_border + 1])
@@ -107,14 +115,14 @@ def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc
             match_matrix[i, j] > threshold]
 
 
-def get_longest_increasing_subsequence(simple_matchings: list[list[tuple[str, str], tuple[str, str]]]) \
+def get_longest_increasing_subsequence(simple_matchings: list[tuple[tuple[str, str], tuple[str, str], float]]) \
         -> tuple[list[str], list[str]]:
     """
     Calculates the longest increasing subsequence within a given matching
 
     Args:
         simple_matching: list containing matching information of the form
-            [(simple_index, normal_index), (simple_sentence, normal_sentence)]
+            ((simple_index, normal_index), (simple_sentence, normal_sentence), distance)
     Returns:
         list of index matching tuples giving the longest increasing subsequence
     """
