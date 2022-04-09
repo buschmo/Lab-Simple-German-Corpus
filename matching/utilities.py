@@ -190,6 +190,7 @@ def get_article_pairs(root_dir: str = dataset_location) -> list:
 
 def calculate_full_n_gram_idf(articles: set[str], n=3, **kwargs) -> dict[str, float]:
     """
+    Calculates the inverse document frequency, the inverse fraction of articles a n-gram appears in.
 
     Args:
         articles: list of article paths
@@ -316,6 +317,7 @@ def calculate_full_word_idf(articles: set[str], **kwargs) -> dict[str, float]:
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
+# TODO This function is never used and might be unnecessary
 def calculate_n_gram_tf_from_article(article: str, n=3, **kwargs) -> dict[str, float]:
     """
     Calculates a n-gram tf dict for the text in the file path
