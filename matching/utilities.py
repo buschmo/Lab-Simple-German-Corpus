@@ -103,14 +103,14 @@ def _kill_hyphen(matchobj) -> str:
 
 def _kill_binnenI(matchobj) -> str:
     """
-        Helper function to remove the German Binnen-I (PilotInnen)
+    Helper function to remove the German Binnen-I (PilotInnen)
 
-        Args:
-            matchobj: matching object of re library
+    Args:
+        matchobj: matching object of re library
 
-        Returns:
-            The first element of the matching object
-        """
+    Returns:
+        The first element of the matching object
+    """
     return matchobj.group(0)[0]
 
 
@@ -135,11 +135,11 @@ def get_unnested_articles(art_pairs=None) -> set[str]:
 
 def get_exemplary_article_pairs(root_dir: str = dataset_location) -> list[tuple[str, str]]:
     """
-        Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory, one per source
+    Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory, one per source
 
-        Args:
-            root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in exemplary_header.json files
-        """
+    Args:
+        root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in exemplary_header.json files
+    """
     parallel_list = []
     for root, dirs, files in os.walk(root_dir):
         for name in files:
