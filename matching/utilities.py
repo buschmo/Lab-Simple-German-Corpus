@@ -464,7 +464,7 @@ def article_generator(matched_article_list: list[tuple[str, str]], *preprocessin
         yield simple, normal, simple_original, normal_original, *simple_arts, *normal_arts
 
 
-def get_original_text_preprocessed(text, spacy_sentences=True):
+def get_original_text_preprocessed(text: str, spacy_sentences: bool = True) -> list[Doc]:
     if spacy_sentences:
         text = text.replace('\n', ' ')
         text = re.sub('\s+', ' ', text)
