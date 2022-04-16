@@ -76,6 +76,7 @@ def main(from_archive: bool = False):
     utl = crawler.utilities
     utl.from_archive = from_archive
 
+    # Crawling
     if from_archive:
         for name in crawler.__all__:
             website_module = getattr(crawler, name)
@@ -92,12 +93,14 @@ def main(from_archive: bool = False):
         # TODO Implement crawling directly from the website
         print("Unaccounted case.")
 
+
+    # Parsing
     for name in crawler.__all__:
         website_module = getattr(crawler, name)
         print(f"Parsing {website_module.base_url}")
         if name == "brandeins":
             # brandeins.de needs special treatment
-            website_module.parse_soups(website_module.base_url)
+            website_module.parse_soups()
         else:
             # continue
             utl.parse_soups(website_module.base_url, website_module.parser)
