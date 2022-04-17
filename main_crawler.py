@@ -72,7 +72,6 @@ def header_to_archive():
 
 
 def main(from_archive: bool = False):
-    # TODO download all files from the header_archive.json
     utl = crawler.utilities
     utl.from_archive = from_archive
 
@@ -104,50 +103,6 @@ def main(from_archive: bool = False):
         else:
             # continue
             utl.parse_soups(website_module.base_url, website_module.parser)
-
-
-def renaming():
-    for folder in os.listdir("Datasets/"):
-        folderpath = f"Datasets/{folder}/"
-        import json
-        with open(folderpath + "header.json") as fp:
-            header = json.load(fp)
-        with open(folderpath + "archive_header.json") as fp:
-            archive_header = json.load(fp)
-        replace = []
-        for key in header:
-            if key.startswith("www."):
-                replace.append(key)
-            elif key.endswith("__.html"):
-                replace.append(key)
-        if replace:
-            # print(replace)
-            for key in list(set(replace)):
-                new_key = key
-                if new_key.startswith("www."):
-                    new_key = new_key[4:]
-                if new_key.endswith("__.html"):
-                    new_key = new_key[:-len("__.html")]+".html"
-
-                try:
-                    header[new_key] = header[key]
-                except KeyError:
-                    print(f"{new_key}, {key}")
-                del header[key]
-                archive_header[new_key] = archive_header[key]
-                del archive_header[key]
-
-                if folder == "www.brandeins.de":
-                    if header[new_key]["easy"]:
-                        os.rename(f"{folderpath}crawled/{key[:-len('_easy.html')]}.html",
-                                  f"{folderpath}crawled/{new_key[:-len('_easy.html')]}.html")
-                else:
-                    os.rename(f"{folderpath}crawled/{key}",
-                              f"{folderpath}crawled/{new_key}")
-            with open(folderpath + "header.json", "w") as fp:
-                json.dump(header, fp, indent=4)
-            with open(folderpath + "archive_header.json", "w") as fp:
-                json.dump(archive_header, fp, indent=4)
 
 
 if __name__ == "__main__":
