@@ -5,6 +5,111 @@ import hashlib
 import os
 import sys
 from pathlib import Path
+from multiprocessing import Pool
+
+
+def article_generator_parallel(matched_article_list: list[tuple[str, str]]) \
+        -> tuple[str, str]:
+    """
+    Generator function that iteratively returns preprocessed articles.
+
+    Args:
+        matched_article_list: List of article pairs that is iterated through
+
+    Returns:
+        simple and normal link to file and preprocessed articles in the form simple_preprocessed(option_1), (..., simple_preprocessed(option_n)), normal_preprocessed(option_1), (..., normal_preprocessed(option_n))
+    """
+    kwargs_gram = utl.make_preprocessing_dict(remove_punctuation=True)
+    kwargs_embeddings = utl.make_preprocessing_dict(
+        lowercase=False, remove_punctuation=True)
+
+    for simple, normal in matched_article_list:
+
+        with open(simple, 'r') as fp:
+            simple_text = fp.read()
+        with open(normal, 'r') as fp:
+            normal_text = fp.read()
+
+        # don't process exact copies
+        if simple_text == normal_text:
+            continue
+        yield simple, normal, simple_text, normal_text, kwargs_gram, kwargs_embeddings
+
+
+def article_preprocess(simple_text, normal_text, *preprocessing_options):
+    simple_original = utl.get_original_text_preprocessed(simple_text)
+    normal_original = utl.get_original_text_preprocessed(normal_text)
+    simple_arts = []
+    normal_arts = []
+
+    for kwargs in preprocessing_options:
+        simple_arts.append(utl.preprocess(simple_text, **kwargs))
+        normal_arts.append(utl.preprocess(normal_text, **kwargs))
+
+    return simple_original, normal_original, *simple_arts, *normal_arts
+
+
+def parallel(simple_name, normal_name, simple_text, normal_text, *preprocessing_options) -> dict[str, list[str]]:
+    simple_original, normal_original, simple_gram, simple_embedding, normal_gram, normal_embedding = article_preprocess(
+        simple_text, normal_text, *preprocessing_options)
+
+    simple_file = simple_name.split('/')[-1]
+    normal_file = normal_name.split('/')[-1]
+
+    if simple_file in header:
+        finished = True
+        for sim_measure in similarity_measures:
+            for matching in doc_matchings:
+                for sd_threshold in sd_thresholds:
+                    filename = utl.make_file_name(
+                        simple_file, normal_file, sim_measure, matching, sd_threshold)
+                    if filename not in header[simple_file]:
+                        finished = False
+                        break
+                if finished == False:
+                    break
+            if finished == False:
+                break
+
+        if finished == True:
+            return {}
+
+    else:
+        header_extension = {simple_file: []}
+        # print(f"Created new entry for file {simple_file}")
+
+    for sim_measure in similarity_measures:
+        if sim_measure == "n_gram":
+            simple_n_tf = utl.calculate_n_gram_tf(simple_gram, n)
+            normal_n_tf = utl.calculate_n_gram_tf(normal_gram, n)
+            sim_matrix = dm.calculate_similarity_matrix(simple_gram, normal_gram, sim_measure, n,
+                                                        simple_n_tf, normal_n_tf, n_gram_idf)
+
+        elif sim_measure == "bag_of_words":
+            simple_word_tf = utl.calculate_word_tf(simple_gram)
+            normal_word_tf = utl.calculate_word_tf(normal_gram)
+            sim_matrix = dm.calculate_similarity_matrix(simple_gram, normal_gram, sim_measure, n,
+                                                        simple_word_tf, normal_word_tf, word_idf)
+
+        else:
+            sim_matrix = dm.calculate_similarity_matrix(
+                simple_embedding, normal_embedding, sim_measure)
+
+        for matching in doc_matchings:
+            for sd_threshold in sd_thresholds:
+
+                results = dm.match_documents(matching, simple_original, normal_original,
+                                             sim_matrix, sd_threshold=sd_threshold)
+
+                filename = utl.make_file_name(
+                    simple_file, normal_file, sim_measure, matching, sd_threshold)
+
+                with open(filename, 'w') as fp:
+                    json.dump(results, fp, ensure_ascii=False, indent=2)
+
+                header_extension[simple_file].append(filename)
+
+    return header_extension
 
 
 def main():
@@ -41,10 +146,6 @@ def main():
 
     articles = utl.get_article_pairs()
     unnested_articles = utl.get_unnested_articles(articles)
-
-    kwargs_gram = utl.make_preprocessing_dict(remove_punctuation=True)
-    kwargs_embeddings = utl.make_preprocessing_dict(
-        lowercase=False, remove_punctuation=True)
 
     idf_article_string = ''.join([art.split('/')[-1]
                                  for art in sorted(list(unnested_articles))])
@@ -87,69 +188,17 @@ def main():
         with open(f"results/{n}_gram_idf.json", 'w') as fp:
             json.dump([idf_article_hash, n_gram_idf], fp, ensure_ascii=False)
 
-    for simple_name, normal_name, simple_original, normal_original, \
-        simple_gram, simple_embedding, normal_gram, normal_embedding in utl.article_generator(
-            articles, kwargs_gram, kwargs_embeddings):
-        print(simple_name, normal_name)
-
-        simple_file = simple_name.split('/')[-1]
-        normal_file = normal_name.split('/')[-1]
-
-        if simple_file in header:
-            finished = True
-            for sim_measure in similarity_measures:
-                for matching in doc_matchings:
-                    for sd_threshold in sd_thresholds:
-                        filename = utl.make_file_name(
-                            simple_file, normal_file, sim_measure, matching, sd_threshold)
-                        if filename not in header[simple_file]:
-                            finished = False
-                            break
-                    if finished == False:
-                        break
-                if finished == False:
-                    break
-
-            if finished == True:
-                continue
-
-        else:
-            header[simple_file] = []
-            print(f"Created new entry for file {simple_file}")
-
-        for sim_measure in similarity_measures:
-            if sim_measure == "n_gram":
-                simple_n_tf = utl.calculate_n_gram_tf(simple_gram, n)
-                normal_n_tf = utl.calculate_n_gram_tf(normal_gram, n)
-                sim_matrix = dm.calculate_similarity_matrix(simple_gram, normal_gram, sim_measure, n,
-                                                            simple_n_tf, normal_n_tf, n_gram_idf)
-
-            elif sim_measure == "bag_of_words":
-                simple_word_tf = utl.calculate_word_tf(simple_gram)
-                normal_word_tf = utl.calculate_word_tf(normal_gram)
-                sim_matrix = dm.calculate_similarity_matrix(simple_gram, normal_gram, sim_measure, n,
-                                                            simple_word_tf, normal_word_tf, word_idf)
-
-            else:
-                sim_matrix = dm.calculate_similarity_matrix(
-                    simple_embedding, normal_embedding, sim_measure)
-
-            for matching in doc_matchings:
-                for sd_threshold in sd_thresholds:
-
-                    results = dm.match_documents(matching, simple_original, normal_original,
-                                                 sim_matrix, sd_threshold=sd_threshold)
-
-                    filename = utl.make_file_name(
-                        simple_file, normal_file, sim_measure, matching, sd_threshold)
-
-                    with open(filename, 'w') as fp:
-                        json.dump(results, fp, ensure_ascii=False, indent=2)
-
-                    header[simple_file].append(filename)
-
-                    with open(header_file, 'w') as fp:
-                        json.dump(header, fp, ensure_ascii=False, indent=2)
+    with Pool() as p:
+        header_extensions = p.starmap(parallel, article_generator_parallel(
+            articles))
+        for ext in header_extensions:
+            for key in ext:
+                if key in header.keys():
+                    header[key] = header[key] + ext[key]
+                else:
+                    header[key] = ext[key]
+        with open(header_file, 'w') as fp:
+            json.dump(header, fp, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":
