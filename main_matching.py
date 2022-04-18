@@ -8,6 +8,17 @@ from pathlib import Path
 from multiprocessing import Pool
 
 
+def generate_aligned_corpus():
+    similarity_measure = "maximum"
+    sd_threshold = 1.5
+    doc_matchings = "max"
+
+    header_file = Path("results/header.json")
+
+    if not os.path.exists("results/matched"):
+        os.makedirs("results/matched")
+
+
 def article_generator_parallel(matched_article_list: list[tuple[str, str]]) \
         -> tuple[str, str]:
     """
@@ -118,6 +129,8 @@ def main():
 
     BEWARE! This calculation is not computed in parallel and thus takes a lot of time
     """
+    global similarity_measures, sd_thresholds, doc_matchings, header, n, word_idf, n_gram_idf
+
     similarity_measures = ["n_gram", "bag_of_words",
                            "cosine", "average", "maximum", "max_matching", "CWASA"]
 
