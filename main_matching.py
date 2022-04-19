@@ -1,7 +1,6 @@
 import matching.utilities as utl
 import matching.DocumentMatching as dm
 import json
-import hashlib
 import os
 import sys
 from pathlib import Path
@@ -105,15 +104,22 @@ def parallel(simple_name, normal_name, simple_text, normal_text) -> dict[str, li
 
         for matching in doc_matchings:
             for sd_threshold in sd_thresholds:
-
-                results = dm.match_documents(matching, simple_original, normal_original,
-                                             sim_matrix, sd_threshold=sd_threshold)
-
                 filename = utl.make_file_name(
                     simple_file, normal_file, sim_measure, matching, sd_threshold)
+                if not os.path.exists(filename):
+                    try:
+                        results = dm.match_documents(matching, simple_original, normal_original,
+                                                    sim_matrix, sd_threshold=sd_threshold)
+                    except ValueError as err:
+                        print(f"ValueError raised by {simple_file} - {normal_file}")
+                        with open("error_log.txt", "a", encoding="utf-8") as fp:
+                            fp.write(f"simple_file:{simple_file} - normal_file:{normal_file}\n\tsim_measure:{sim_measure} - matching:{matching} - thresh:{sd_threshold}\n")
+                            fp.write(f"{sim_matrix}")
+                            fp.write("\n\n\n#####\n\n\n")
+                        continue
 
-                with open(filename, 'w') as fp:
-                    json.dump(results, fp, ensure_ascii=False, indent=2)
+                    with open(filename, 'w') as fp:
+                        json.dump(results, fp, ensure_ascii=False, indent=2)
 
                 header_extension[simple_file].append(filename)
 
@@ -163,8 +169,7 @@ def main():
 
     idf_article_string = ''.join([art.split('/')[-1]
                                  for art in sorted(list(unnested_articles))])
-    idf_article_hash = int(hashlib.sha1(
-        idf_article_string.encode("utf-8")).hexdigest(), 16)
+    idf_article_hash = utl.get_hash(idf_article_string)
 
     print("ARTICLE HASH", idf_article_hash)
 

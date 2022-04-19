@@ -5,6 +5,7 @@ import re
 import numpy as np
 import os
 import json
+import hashlib
 
 from spacy.tokens import Doc
 
@@ -500,7 +501,15 @@ def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=T
             'lemmatization': lemmatization, 'spacy_sentences': spacy_sentences,
             'remove_stopwords': remove_stopwords, 'remove_punctuation': remove_punctuation}
 
+def get_hash(string :str) -> int:
+    if not isinstance(string, str):
+        raise TypeError(f"Expected string, but got {type(string)}")
+    return int(hashlib.sha1(string.encode("utf-8")).hexdigest(), 16)
+
+def get_file_name_hash(simple_file:str, normal_file:str) -> int:
+    string = simple_file + "___" + normal_file
+    return get_hash(string)
 
 def make_file_name(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
-    return f"results/matched/{simple_file[-20:]}___{normal_file[-20:]}---{sim_measure}---{matching}---{str(sd_threshold)}." \
+    return f"results/matched/{get_file_name_hash(simple_file, normal_file)}--{sim_measure}--{matching}--{str(sd_threshold)}." \
            f"matches"
