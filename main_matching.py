@@ -30,9 +30,6 @@ def article_generator_parallel(matched_article_list: list[tuple[str, str]]) \
     Returns:
         simple and normal link to file and preprocessed articles in the form simple_preprocessed(option_1), (..., simple_preprocessed(option_n)), normal_preprocessed(option_1), (..., normal_preprocessed(option_n))
     """
-    kwargs_gram = utl.make_preprocessing_dict(remove_punctuation=True)
-    kwargs_embeddings = utl.make_preprocessing_dict(
-        lowercase=False, remove_punctuation=True)
 
     for simple, normal in matched_article_list:
 
@@ -44,15 +41,15 @@ def article_generator_parallel(matched_article_list: list[tuple[str, str]]) \
         # don't process exact copies
         if simple_text == normal_text:
             continue
-        yield simple, normal, simple_text, normal_text, kwargs_gram, kwargs_embeddings
+        yield simple, normal, simple_text, normal_text
 
 
-def article_preprocess(simple_text, normal_text, *preprocessing_options):
+def article_preprocess(simple_text, normal_text):
     simple_original = utl.get_original_text_preprocessed(simple_text)
     normal_original = utl.get_original_text_preprocessed(normal_text)
     simple_arts = []
     normal_arts = []
-
+    preprocessing_options = [kwargs_gram, kwargs_embeddings]
     for kwargs in preprocessing_options:
         simple_arts.append(utl.preprocess(simple_text, **kwargs))
         normal_arts.append(utl.preprocess(normal_text, **kwargs))
@@ -60,9 +57,9 @@ def article_preprocess(simple_text, normal_text, *preprocessing_options):
     return simple_original, normal_original, *simple_arts, *normal_arts
 
 
-def parallel(simple_name, normal_name, simple_text, normal_text, *preprocessing_options) -> dict[str, list[str]]:
+def parallel(simple_name, normal_name, simple_text, normal_text) -> dict[str, list[str]]:
     simple_original, normal_original, simple_gram, simple_embedding, normal_gram, normal_embedding = article_preprocess(
-        simple_text, normal_text, *preprocessing_options)
+        simple_text, normal_text)
 
     simple_file = simple_name.split('/')[-1]
     normal_file = normal_name.split('/')[-1]
@@ -129,7 +126,7 @@ def main():
 
     BEWARE! This calculation is not computed in parallel and thus takes a lot of time
     """
-    global similarity_measures, sd_thresholds, doc_matchings, header, n, word_idf, n_gram_idf
+    global similarity_measures, sd_thresholds, doc_matchings, header, n, word_idf, n_gram_idf, kwargs_gram, kwargs_embeddings
 
     similarity_measures = ["n_gram", "bag_of_words",
                            "cosine", "average", "maximum", "max_matching", "CWASA"]
@@ -139,6 +136,10 @@ def main():
     doc_matchings = ["max", "max_increasing_subsequence"]
 
     header_file = "results/header.json"
+
+    kwargs_gram = utl.make_preprocessing_dict(remove_punctuation=True)
+    kwargs_embeddings = utl.make_preprocessing_dict(
+        lowercase=False, remove_punctuation=True)
 
     if not os.path.exists("results/"):
         os.mkdir("results")
