@@ -126,7 +126,7 @@ website_evals = [[] for _ in websites]
 
 set_evaluated = set([file[:-8] for file in os.listdir("results/evaluated")])
 for i, website in enumerate(websites):
-    with open(os.path.join(dataset_location, f"{website}/header.json")) as fp:
+    with open(os.path.join(dataset_location, f"{website}/parsed_header.json")) as fp:
         header = json.load(fp)
         website_keys = header.keys()
 

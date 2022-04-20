@@ -161,12 +161,12 @@ def get_article_pairs(root_dir: str = dataset_location) -> list:
     Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory
 
     Args:
-        root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in header.json files
+        root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in parsed_header.json files
     """
     parallel_list = []
     for root, dirs, files in os.walk(root_dir):
         for name in files:
-            if name == 'header.json':
+            if name == 'parsed_header.json':
                 with open(os.path.join(root, name), 'r') as fp:
                     data = json.load(fp)
 

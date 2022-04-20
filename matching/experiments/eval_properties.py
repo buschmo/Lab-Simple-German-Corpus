@@ -19,7 +19,7 @@ def test_number_of_files():
 
     for root, dirs, files in os.walk(dataset_location):
         for name in files:
-            if name == 'header.json':
+            if name == 'parsed_header.json':
                 with open(os.path.join(root, name), 'r') as fp:
                     data = json.load(fp)
                 root_set_simple = set()
