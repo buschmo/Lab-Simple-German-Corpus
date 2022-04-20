@@ -16,10 +16,15 @@ In later work, such a (potentially expanded) corpus may be used to implement aut
 Papers that we use as inspiration for our work can be found in the resources wiki.
 
 ## Using this repository
-Currently the code is only running under PyCharm (or similar) due to the import's pathing.
-This will be reworked in future commits.
+To run the whole code, simply setup the environment and run `python main.py`.
+This calls both `main_crawler.py` as well as `main_matching.py`.
+The crawler downloads the archived websites and parses all contents.
+The matcher calculates all corresponding match distances.
+**Beware that the latter might take a lot of time, even though it is parallelized**.
+The end result can be foudn in the `results/` folder
 
 ## Tools/Libraries
+The code was written using python version 3.10.4
 All python packages needed to run the code can be found in the "requirements" file and installed using
 `pip install -r requirements`.
 We recommend using a virtualenv.
