@@ -19,7 +19,7 @@ SCRAPE_DELAY = 5
 
 LAST_SCRAPE = None
 
-from_archive=False
+from_archive = False
 
 
 def read_soup(url: str):
@@ -58,7 +58,7 @@ def save_soup(soup, filepath: Path):
     #     log_resaving_file(filepath)
 
 
-def load_header(url:str):
+def load_header(url: str) -> dict:
     headerpath = get_headerpath_from_url(url)
     # save header information
     if os.path.exists(headerpath):
@@ -99,14 +99,14 @@ def save_header(filepath, url: str, matching_filepath: Path, bool_easy: bool = F
         json.dump(header, f, indent=4)
 
 
-def remove_header_entry(url:str, main_key:str):
+def remove_header_entry(url: str, main_key: str):
     """ Removes an entry and deletes all corresponding files.
     """
     header = load_header(url)
     # already deleted
     if not main_key in header.keys():
         return
-    
+
     # delete crawled file
     crawled_path = get_crawled_path_from_url(header[main_key]["url"])
     if os.path.exists(crawled_path):
@@ -115,7 +115,7 @@ def remove_header_entry(url:str, main_key:str):
     parsed_path = get_parsed_path_from_url(header[main_key]["url"])
     if os.path.exists(parsed_path):
         os.remove(parsed_path)
-    
+
     matching_files = header[main_key]["matching_files"]
     for key in matching_files:
         header[key]["matching_files"].remove(main_key)
@@ -135,12 +135,12 @@ def remove_header_entry(url:str, main_key:str):
     headerpath = get_headerpath_from_url(url)
     with open(headerpath, "w", encoding="utf-8") as f:
         json.dump(header, f, indent=4)
-    
+
 
 def get_names_from_url(url: str) -> [str, str]:
     if from_archive:
         if "//web.archive.org/web/" in url:
-            url = re.sub("\w+://web.archive.org/web/\d+/","", url)
+            url = re.sub("\w+://web.archive.org/web/\d+/", "", url)
     if not url.startswith("http"):
         print(f"{url} did not specify a scheme, thus it will be added.")
         url = "https://" + url
@@ -158,9 +158,11 @@ def get_names_from_url(url: str) -> [str, str]:
     return foldername, filename
 
 
-def get_headerpath_from_url(url: str) -> Path:
+def get_headerpath_from_url(url: str, parsed: bool = False) -> Path:
     foldername, _ = get_names_from_url(url)
-    if from_archive:
+    if parsed:
+        return Path("Datasets", foldername, "parsed_header.json")
+    elif from_archive:
         return Path("Datasets", foldername, "archive_header.json")
     else:
         return Path("Datasets", foldername, "header.json")
@@ -228,6 +230,8 @@ def parse_url(url, base_url):
 
 def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
     header = load_header(base_url)
+    parsed_header_path = get_headerpath_from_url(base_url, parsed=True)
+    parsed_header = {}
     l_remove = []
     for filename in header.keys():
         url = header[filename]["url"]
@@ -240,17 +244,12 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
         soup = read_soup(url)
         parsed_content = parser(soup)
 
-
         # filter out empty results as no parsable entry exists
-        if not parsed_content or not parsed_content.contents:
-            print(f"Unclear content for {url}. Header entry is removed.")
-            l_remove.append(filename)
-            continue
+        if parsed_content and parsed_content.contents:
+            if not os.path.exists(path.parent):
+                os.makedirs(path.parent)
 
-        if not os.path.exists(path.parent):
-            os.makedirs(path.parent)
-
-        with open(path, "w", encoding="utf-8") as f:
+            string = ""
             for tag in parsed_content.contents:
                 text = tag.get_text()
                 # clean up of text
@@ -262,11 +261,33 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
                 for sentence in re.split(r"([?.:!] )", text):
                     # Move punctuation to the correct position, i.e. the previous line
                     if sentence in [". ", ": ", "? ", "! "]:
-                        f.seek(f.tell()-1)
-                    f.write(f"{sentence}\n")
+                        string = string[:-1]
+                    string += f"{sentence}\n"
+            if string:
+                with open(path, "w", encoding="utf-8") as fp:
+                    fp.write(string)
+                parsed_header[filename] = header[filename]
+                continue
+        print(
+            f"No content for {url}. No header entry is created.\n\tCorresponding matching entries will be adapted.")
+        l_remove.append(filename)
 
-    for key in l_remove:
-        remove_header_entry(base_url, key)
+    # clean-up of empty files
+    for filename in l_remove:
+        for matching in header[filename]["matching_files"]:
+            # check if it was parsed
+            if matching in parsed_header:
+                parsed_header[matching]["matching_files"].remove(filename)
+                if not parsed_header[matching]["matching_files"]:
+                    # delete the entry and its parsed file, if no matching files remain
+                    parsed_path = get_parsed_path_from_url(
+                        parsed_header[matching]["url"])
+                    os.remove(parsed_path)
+                    del parsed_header[matching]
+                    print(
+                        f"Removed {matching}, as no matching file remained after {filename} was removed.")
+    with open(parsed_header_path, "w", encoding="utf-8") as fp:
+        json.dump(parsed_header, fp)
 
 
 def filter_urls(urls: list, base_url: str) -> list:
@@ -287,9 +308,8 @@ def filter_urls(urls: list, base_url: str) -> list:
     return urls
 
 
+### LOGGING UTILITIES ###
 
-""" LOGGING UTILITIES
-"""
 def log_missing_url(url: str):
     if not already_logged(url):
         path = get_log_path_from_url(url)
