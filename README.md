@@ -21,10 +21,10 @@ This calls both `main_crawler.py` as well as `main_matching.py`.
 The crawler downloads the archived websites and parses all contents.
 The matcher calculates all corresponding match distances.
 **Beware that the latter might take a lot of time, even though it is parallelized**.
-The end result can be foudn in the `results/` folder
+The end result can be found in the `results/` folder
 
 ## Tools/Libraries
-The code was written using python version 3.10.4
+The code was written using python version 3.10.4.\
 All python packages needed to run the code can be found in the "requirements" file and installed using
 `pip install -r requirements`.
 We recommend using a virtualenv.
