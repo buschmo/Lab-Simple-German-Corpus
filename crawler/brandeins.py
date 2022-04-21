@@ -51,6 +51,8 @@ def parse_soups():
 
     # new_header = {}
     header = utl.load_header(base_url)
+    parsed_header_path = utl.get_headerpath_from_url(base_url, parsed=True)
+    parsed_header = {}
 
     for key in header.keys():
         if not header[key]["easy"]:
@@ -88,37 +90,47 @@ def parse_soups():
             continue
 
         # ===== Save parsed contents =====
-        with open(easy_filepath, "w", encoding="utf-8") as f:
-            for paragraph in text_easy:
-                text = paragraph.get_text()
-                # clean up of text
-                text = re.sub("\s+", " ", text)
-                text = text.strip()
-                # # remove empty lines
-                if not text:
-                    continue
-                for j, sentence in enumerate(re.split(r"([?.:!] )", text)):
-                    # print(f"{i}-{j}#{sentence}")
-                    # Move punctuation to the correct position
-                    if sentence in [". ", ": ", "? ", "! "]:
-                        f.seek(f.tell()-1)
-                    f.write(f"{sentence}\n")
+        string_easy = ""
+        for paragraph in text_easy:
+            text = paragraph.get_text()
+            # clean up of text
+            text = re.sub("\s+", " ", text)
+            text = text.strip()
+            # # remove empty lines
+            if not text:
+                continue
+            for sentence in re.split(r"([?.:!] )", text):
+                # Move punctuation to the correct position
+                if sentence in [". ", ": ", "? ", "! "]:
+                    string_easy = string_easy[:-1]
+                string_easy += f"{sentence}\n"
 
-        with open(normal_filepath, "w", encoding="utf-8") as f:
-            for paragraph in text_normal:
-                text = paragraph.get_text()
-                # clean up of text
-                text = re.sub("\s+", " ", text)
-                text = text.strip()
-                # # remove empty lines
-                if not text:
-                    continue
-                for j, sentence in enumerate(re.split(r"([?.:!] )", text)):
-                    # print(f"{i}-{j}#{sentence}")
-                    # Move punctuation to the correct position
-                    if sentence in [". ", ": ", "? ", "! "]:
-                        f.seek(f.tell()-1)
-                    f.write(f"{sentence}\n")
+        string_normal = ""
+        for paragraph in text_normal:
+            text = paragraph.get_text()
+            # clean up of text
+            text = re.sub("\s+", " ", text)
+            text = text.strip()
+            # # remove empty lines
+            if not text:
+                continue
+            for sentence in re.split(r"([?.:!] )", text):
+                # Move punctuation to the correct position
+                if sentence in [". ", ": ", "? ", "! "]:
+                    string_normal = string_normal[:-1]
+                string_normal += f"{sentence}\n"
+        
+        if string_normal and string_easy:
+            with open(normal_filepath, "w", encoding="utf-8") as f_normal, open(easy_filepath, "w", encoding="utf-8") as f_easy:
+                f_normal.write(string_normal)
+                f_easy.write(string_easy)
+
+                parsed_header[key] = header[key]
+                parsed_header[header[key]["matching_files"][0]] = header[header[key]["matching_files"][0]]
+        else:
+            print(f"No content found for {key}")
+    with open(parsed_header_path, "w", encoding="utf-8") as fp:
+        json.dump(parsed_header, fp, indent=4)
 
 
 base_url = "https://www.brandeins.de/"
