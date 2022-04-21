@@ -287,7 +287,7 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
                     print(
                         f"Removed {matching}, as no matching file remained after {filename} was removed.")
     with open(parsed_header_path, "w", encoding="utf-8") as fp:
-        json.dump(parsed_header, fp)
+        json.dump(parsed_header, fp, indent=4)
 
 
 def filter_urls(urls: list, base_url: str) -> list:
