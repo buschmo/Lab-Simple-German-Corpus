@@ -111,6 +111,8 @@ def parse_soups():
             # clean up of text
             text = re.sub("\s+", " ", text)
             text = text.strip()
+            # brandeins uses · instead of - vor concatenation
+            text = re.sub("·", "-", text)
             # # remove empty lines
             if not text:
                 continue
@@ -119,14 +121,15 @@ def parse_soups():
                 if sentence in [". ", ": ", "? ", "! "]:
                     string_normal = string_normal[:-1]
                 string_normal += f"{sentence}\n"
-        
+
         if string_normal and string_easy:
             with open(normal_filepath, "w", encoding="utf-8") as f_normal, open(easy_filepath, "w", encoding="utf-8") as f_easy:
                 f_normal.write(string_normal)
                 f_easy.write(string_easy)
 
                 parsed_header[key] = header[key]
-                parsed_header[header[key]["matching_files"][0]] = header[header[key]["matching_files"][0]]
+                parsed_header[header[key]["matching_files"][0]
+                              ] = header[header[key]["matching_files"][0]]
         else:
             print(f"No content found for {key}")
     with open(parsed_header_path, "w", encoding="utf-8") as fp:
