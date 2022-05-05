@@ -45,7 +45,7 @@ def get_results_done(results, name):
         for root, dirs, files in os.walk("results/matched"):
             for file in files:
                 if file.startswith(comb) and file.endswith("1.5.matches"):
-                    _, v1, v2, _ = file.split('---')
+                    _, v1, v2, _ = file.split('--')
                     if v1 not in res_dict:
                         res_dict[v1] = dict()
                     if v2 not in res_dict[v1]:
@@ -136,7 +136,7 @@ for i, website in enumerate(websites):
         for key in header:
             if key[:-4] in website_keys:
                 for file in header[key]:
-                    set_matched.add(file.split("---")[0].split("/")[-1])
+                    set_matched.add(file.split("--")[0].split("/")[-1])
 
     print(f"{website}: {len(set_evaluated & set_matched)}")
     website_evals[i] = set_evaluated & set_matched

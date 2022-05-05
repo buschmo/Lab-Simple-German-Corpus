@@ -25,7 +25,7 @@ for root, dirs, files in os.walk("results/matched"):
             except json.decoder.JSONDecodeError:
                 continue
 
-        sim, matching, thres = file.split('---')[-3:]
+        sim, matching, thres = file.split('--')[-3:]
         thres = thres.replace('.matches', '')
 
         stat_file = stat_file.append({"Similarity measure": sim,

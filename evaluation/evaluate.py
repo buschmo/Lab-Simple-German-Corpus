@@ -36,7 +36,7 @@ for i, website in enumerate(websites):
         for key in header:
             if key[:-4] in website_keys:
                 for file in header[key]:
-                    set_matched.add(file.split("---")[0].split("/")[-1])
+                    set_matched.add(file.split("--")[0].split("/")[-1])
     print(f"{website}: {len(set_evaluated & set_matched)}")
 
 # prepare the filtering per website
@@ -62,7 +62,7 @@ for root, dirs, files in os.walk("results/matched"):
     for file in files:
         if file.endswith(".matches"):
             filepath = os.path.join(root, file)
-            combination = file.split('---')[0]
+            combination = file.split('--')[0]
             file_matchings.add(combination)
 
 

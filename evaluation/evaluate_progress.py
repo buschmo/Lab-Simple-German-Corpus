@@ -12,7 +12,7 @@ for root, dirs, files in os.walk("results/matched"):
     for file in files:
         if file.endswith(".matches"):
             filepath = os.path.join(root, file)
-            combination = file.split('---')[0]
+            combination = file.split('--')[0]
             file_matchings.add(combination)
 
 
@@ -32,8 +32,8 @@ def get_results_done(results):
         for root, dirs, files in os.walk("results/matched"):
             for file in files:
                 if file.startswith(comb) and file.endswith("1.5.matches"):
-                    print("\t".join(file.split('---')[1:]))
-                    _, v1, v2, _ = file.split('---')
+                    print("\t".join(file.split('--')[1:]))
+                    _, v1, v2, _ = file.split('--')
                     if v1 not in res_dict:
                         res_dict[v1] = dict()
                     if v2 not in res_dict[v1]:
