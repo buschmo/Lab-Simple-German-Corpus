@@ -21,7 +21,9 @@ This calls both `main_crawler.py` as well as `main_matching.py`.
 The crawler downloads the archived websites and parses all contents.
 The matcher calculates all corresponding match distances.
 **Beware that the latter might take a lot of time, even though it is parallelized**.
-The end result can be found in the `results/` folder
+The end result can be found in the `results/` folder.
+
+To run other code, i.e. `evaluate.py` in the `evaluation` folder, run `python -m evaluation.evaluate`.
 
 ## Tools/Libraries
 The code was written using python version 3.10.4.\
