@@ -510,6 +510,12 @@ def get_file_name_hash(simple_file:str, normal_file:str) -> int:
     string = simple_file + "___" + normal_file
     return get_hash(string)
 
-def make_file_name(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
+def make_matching_path(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
     return f"results/matched/{get_file_name_hash(simple_file, normal_file)}--{sim_measure}--{matching}--{str(sd_threshold)}." \
            f"matches"
+
+def make_alignment_path(simple_file: str, normal_file: str) -> tuple[str,str]:
+    hash = get_file_name_hash(simple_file, normal_file)
+    simple = f"results/alignment/{hash}.simple"
+    normal = f"results/alignment/{hash}.normal"
+    return (simple, normal)

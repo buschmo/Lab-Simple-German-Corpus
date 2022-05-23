@@ -68,7 +68,7 @@ def parallel(simple_name, normal_name, simple_text, normal_text) -> dict[str, li
         for sim_measure in similarity_measures:
             for matching in doc_matchings:
                 for sd_threshold in sd_thresholds:
-                    filename = utl.make_file_name(
+                    filename = utl.make_matching_path(
                         simple_file, normal_file, sim_measure, matching, sd_threshold)
                     if filename not in header[simple_file]:
                         finished = False
@@ -104,7 +104,7 @@ def parallel(simple_name, normal_name, simple_text, normal_text) -> dict[str, li
 
         for matching in doc_matchings:
             for sd_threshold in sd_thresholds:
-                filename = utl.make_file_name(
+                filename = utl.make_matching_path(
                     simple_file, normal_file, sim_measure, matching, sd_threshold)
                 if not os.path.exists(filename):
                     try:
