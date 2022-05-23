@@ -69,18 +69,22 @@ full_stat = stat_file.groupby(["Similarity measure", "Alignment strategy", "sd-T
      "AvgSim": 2,
      "TotalMatches": 0})
 
-print(sim_stat.to_latex(index=False,
-                        caption="Match statistics by similarity measure",
-                        label="tab:sim-stat"))
-print(match_stat.to_latex(index=False,
-                          caption="Match statistics by alignment strategy",
-                          label="tab:align-stat"))
-print(thres_stat.to_latex(index=False,
-                          caption="Match statistics by threshold value",
-                          label="tab:thres-stat"))
-print(full_stat.to_latex(index=False,
-                          caption="Match statistics for full combinations of settings",
-                          label="tab:full-stat"))
+with open("results/latex_eval_matches_auto.txt", "w", encoding="utf-8") as fp:
+    fp.write(sim_stat.to_latex(index=False,
+                            caption="Match statistics by similarity measure",
+                            label="tab:sim-stat"))
+    fp.write('\n\n')
+    fp.write(match_stat.to_latex(index=False,
+                            caption="Match statistics by alignment strategy",
+                            label="tab:align-stat"))
+    fp.write('\n\n')
+    fp.write(thres_stat.to_latex(index=False,
+                            caption="Match statistics by threshold value",
+                            label="tab:thres-stat"))
+    fp.write('\n\n')
+    fp.write(full_stat.to_latex(index=False,
+                            caption="Match statistics for full combinations of settings",
+                            label="tab:full-stat"))
 
 print(sim_stat)
 print(match_stat)
