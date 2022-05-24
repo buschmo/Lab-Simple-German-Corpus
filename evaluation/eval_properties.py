@@ -10,7 +10,7 @@ import pandas as pd
 
 
 def test_number_of_files():
-    with open("results/header.json") as fp:
+    with open("results/header_matching.json") as fp:
         header = json.load(fp)
         print(f"Total number of evaluated files: {len(set(header.keys()))}")
 

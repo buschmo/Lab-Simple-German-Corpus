@@ -12,7 +12,7 @@ def generate_aligned_corpus():
     sd_threshold = 1.5
     doc_matchings = "max"
 
-    header_file = Path("results/header.json")
+    header_file = Path("results/header_matching.json")
 
     if not os.path.exists("results/matched"):
         os.makedirs("results/matched")
@@ -141,7 +141,7 @@ def main():
 
     doc_matchings = ["max", "max_increasing_subsequence"]
 
-    header_file = "results/header.json"
+    header_file = "results/header_matching.json"
 
     kwargs_gram = utl.make_preprocessing_dict(remove_punctuation=True)
     kwargs_embeddings = utl.make_preprocessing_dict(

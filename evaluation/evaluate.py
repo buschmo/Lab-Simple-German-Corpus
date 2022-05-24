@@ -30,7 +30,7 @@ for i, website in enumerate(websites):
         header = json.load(fp)
         website_keys = header.keys()
 
-    with open("results/header.json") as fp:
+    with open("results/header_matching.json") as fp:
         header = json.load(fp)
         set_matched = set()
         for key in header:
@@ -46,7 +46,7 @@ if website_selection:
     with open(os.path.join(dataset_location, f"{websites[website_selection - 1]}/parsed_header.json")) as fp:
         header = json.load(fp)
         website_keys = header.keys()
-    with open("results/header.json") as fp:
+    with open("results/header_matching.json") as fp:
         header = json.load(fp)
         filtered_files = []
         for key in header:
