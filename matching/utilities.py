@@ -501,21 +501,65 @@ def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=T
             'lemmatization': lemmatization, 'spacy_sentences': spacy_sentences,
             'remove_stopwords': remove_stopwords, 'remove_punctuation': remove_punctuation}
 
-def get_hash(string :str) -> int:
+
+def get_hash(string: str) -> int:
     if not isinstance(string, str):
         raise TypeError(f"Expected string, but got {type(string)}")
     return int(hashlib.sha1(string.encode("utf-8")).hexdigest(), 16)
 
-def get_file_name_hash(simple_file:str, normal_file:str) -> int:
+
+def get_file_name_hash(simple_file: str, normal_file: str) -> int:
     string = simple_file + "___" + normal_file
     return get_hash(string)
 
-def make_matching_path(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
-    return f"results/matched/{get_file_name_hash(simple_file, normal_file)}--{sim_measure}--{matching}--{str(sd_threshold)}." \
-           f"matches"
 
-def make_alignment_path(simple_file: str, normal_file: str) -> tuple[str,str]:
+def make_matching_path(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
+    hash = get_file_name_hash(simple_file, normal_file)
+    return f"results/matched/{hash}--{sim_measure}--{matching}--{str(sd_threshold)}.matches"
+
+
+def make_hand_aligned_path(simple_file: str, normal_file: str) -> str:
+    hash = get_file_name_hash(simple_file, normal_file)
+    simple = f"results/hand_aligned/{hash}.simple"
+    normal = f"results/hand_aligned/{hash}.normal"
+    return (simple, normal)
+
+
+def make_alignment_path(simple_file: str, normal_file: str) -> tuple[str, str]:
     hash = get_file_name_hash(simple_file, normal_file)
     simple = f"results/alignment/{hash}.simple"
     normal = f"results/alignment/{hash}.normal"
     return (simple, normal)
+
+def get_website_hashes(root_dir: str = dataset_location)->list:
+    """
+    Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory
+
+    Args:
+        root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in parsed_header.json files
+    """
+    website_hashes = {}
+    for root, _, files in os.walk(root_dir):
+        for name in files:
+            if name == 'parsed_header.json':
+                with open(os.path.join(root, name), 'r') as fp:
+                    header = json.load(fp)
+
+                website = root.split("/")[-1]
+                website_hashes[website] = []
+                for fname in header:
+                    # if str(root).endswith("www.brandeins.de"):
+                    #     name = str(fname).replace('.html', '')
+                    #     parallel_list.append((os.path.join(root, 'parsed/' + name + '_easy.html.txt'),
+                    #                           os.path.join(root, 'parsed/' + name + '_normal.html.txt')))
+                    #     continue
+                    if 'matching_files' not in header[fname]:
+                        continue
+                    if 'easy' not in header[fname]:
+                        continue
+                    if not header[fname]['easy']:
+                        continue
+                    for parallel_article in header[fname]['matching_files']:
+                        website_hashes[website].append(get_file_name_hash(fname, parallel_article))
+
+    return website_hashes
