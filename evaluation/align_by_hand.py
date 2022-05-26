@@ -31,12 +31,16 @@ class gui:
 
         # configure scrollbar
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        # self.canvas.bind('<Configure>', )
+        self.canvas.bind("<Configure>", lambda e: self.canvas.config(scrollregion=self.canvas.bbox("all")))
+        # MouseWheel action
+        self.root.bind_all("<MouseWheel>", self.on_mousewheel)
+        self.root.bind_all("<Button-4>", self.on_mousewheel)
+        self.root.bind_all("<Button-5>", self.on_mousewheel)
 
+        # configure innerframe
         self.innerframe = ttk.Frame(self.canvas, padding="5")
         self.innerframe.grid(column=0, row=0, sticky="NEWS")
         self.canvas.create_window(0,0,anchor="nw",window=self.innerframe)
-        self.canvas.bind("<Configure>", lambda e: self.canvas.config(scrollregion=self.canvas.bbox("all")))
 
         self.normal_radio = self.easy_check = []
         self.match_generator = self.get_articles()
@@ -48,6 +52,16 @@ class gui:
         self.button_progress.grid(column=0, row=1, sticky="w")
         self.next_website()
     
+    def on_mousewheel(self, event):
+        delta = 1
+        if event.num==5:
+            # scroll down
+            self.canvas.yview_scroll(delta, "units")
+        elif event.num==4:
+            # scroll up
+            self.canvas.yview_scroll(-delta, "units")
+        else:
+            self.canvas.yview_scroll(-1*(event.delta/120), "units")
 
     def get_articles(self):
         path = "results/website_sample.pkl"
