@@ -8,6 +8,7 @@ import re
 import pickle
 import math
 import random
+import platform
 
 import matching.utilities as utl
 from matching.defaultvalues import *
@@ -72,14 +73,19 @@ class gui:
 
     def on_mousewheel(self, event):
         delta = 1
-        if event.num == 5:
-            # scroll down
-            self.canvas.yview_scroll(delta, "units")
-        elif event.num == 4:
-            # scroll up
-            self.canvas.yview_scroll(-delta, "units")
+
+        # make mousewheel work in macOS
+        if platform.system() == "Darwin":
+            self.canvas.yview_scroll(-1 * event.delta, "units")
         else:
-            self.canvas.yview_scroll(-1*(event.delta/120), "units")
+            if event.num == 5:
+                # scroll down
+                self.canvas.yview_scroll(delta, "units")
+            elif event.num == 4:
+                # scroll up
+                self.canvas.yview_scroll(-delta, "units")
+            else:
+                self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
     def get_articles(self):
         path = "results/website_sample.pkl"
@@ -115,6 +121,10 @@ class gui:
         simple_path, normal_path = next(self.match_generator)
         simple_file = simple_path.split("/")[-1]
         normal_file = normal_path.split("/")[-1]
+
+        # changes here, because my files have probably old names:
+        simple_path = os.path.join(os.path.split(simple_path)[0], "www." + os.path.split(simple_path)[1])
+        normal_path = os.path.join(os.path.split(normal_path)[0], "www." + os.path.split(normal_path)[1])
 
         self.alignment = {}
         self.save_path_easy, self.save_path_normal = utl.make_hand_aligned_path(
@@ -217,7 +227,7 @@ nlp = spacy.load("de_core_news_lg")
 
 if __name__ == "__main__":
     if not os.path.isdir("results/hand_aligned/"):
-        os.mkdir("results/hand_aligned/")
+        os.makedirs("results/hand_aligned/")
     root = tk.Tk()
     # root.geometry("1280x720")
     gui(root)
