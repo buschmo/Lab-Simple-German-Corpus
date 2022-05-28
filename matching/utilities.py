@@ -518,10 +518,14 @@ def make_matching_path(simple_file: str, normal_file: str, sim_measure: str, mat
     return f"results/matched/{hash}--{sim_measure}--{matching}--{str(sd_threshold)}.matches"
 
 
-def make_hand_aligned_path(simple_file: str, normal_file: str) -> str:
+def make_hand_aligned_path(simple_file: str, normal_file: str, short: str = None) -> str:
     hash = get_file_name_hash(simple_file, normal_file)
-    simple = f"results/hand_aligned/{hash}.simple"
-    normal = f"results/hand_aligned/{hash}.normal"
+    if not short:
+        simple = f"results/hand_aligned/{short}-{hash}.simple"
+        normal = f"results/hand_aligned/{short}-{hash}.normal"
+    else:
+        simple = f"results/hand_aligned/{hash}.simple"
+        normal = f"results/hand_aligned/{hash}.normal"
     return (simple, normal)
 
 
