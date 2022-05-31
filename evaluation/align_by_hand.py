@@ -94,8 +94,9 @@ class gui:
                 self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
     def get_articles(self):
-        path = "results/website_sample.pkl"
+        path = "results/better_samples.pkl"
         if os.path.exists(path):
+            print("using better_samples")
             # load existing subset
             with open(path, "rb") as fp:
                 self.pairs_sample = pickle.load(fp)
@@ -133,9 +134,12 @@ class gui:
         normal_file = normal_path.split("/")[-1]
 
         # changes here, because I use the files from sciebo:
-        if os.environ.get("LOGNAME") == "vtoborek":
-            simple_path = os.path.join(os.path.split(simple_path)[0], "www." + os.path.split(simple_path)[1])
-            normal_path = os.path.join(os.path.split(normal_path)[0], "www." + os.path.split(normal_path)[1])
+        # if os.environ.get("LOGNAME") == "vtoborek":
+        #     simple_path = os.path.join(os.path.split(simple_path)[0], "www." + os.path.split(simple_path)[1])
+        #     normal_path = os.path.join(os.path.split(normal_path)[0], "www." + os.path.split(normal_path)[1])
+
+        simple_path = os.path.join(dataset_location, simple_path)
+        normal_path = os.path.join(dataset_location, normal_path)
 
         print(f"New simple file: {os.path.split(simple_path)[1]}")
         print(f"New standard file: {os.path.split(normal_path)[1]}")
