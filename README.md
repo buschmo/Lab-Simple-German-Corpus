@@ -16,6 +16,12 @@ In later work, such a (potentially expanded) corpus may be used to implement aut
 Papers that we use as inspiration for our work can be found in the resources wiki.
 
 ## Using this repository
+Before using the repo, you **must** create the file `matching/defaultvalues.py`.
+Within it, define a variable `dataset_location` with the absolute path to the `Dataset` folder. E.g. `dataset=/home/bob/Simple-German-Corpus/Datasets`
+Please note, that downloading is throttled by a 5 second delay to reduce network traffic.
+You can change this in `crawler/utilities.py`
+
+
 To run the whole code, simply setup the environment and run `python main.py`.
 This calls both `main_crawler.py` as well as `main_matching.py`.
 The crawler downloads the archived websites and parses all contents.
@@ -23,7 +29,11 @@ The matcher calculates all corresponding match distances.
 **Beware that the latter might take a lot of time, even though it is parallelized**.
 The end result can be found in the `results/` folder.
 
-To run other code, i.e. `evaluate.py` in the `evaluation` folder, run `python -m evaluation.evaluate`.
+
+To run other code, i.e. `evaluate.py` in the `evaluation` folder, use `python -m evaluation.evaluate`.
+For manual alignment `python -m evaluation.align_by_hand` might come in handy.
+*(This tool is by no means fully fleshed out)*
+
 
 ## Tools/Libraries
 The code was written using python version 3.10.4.\

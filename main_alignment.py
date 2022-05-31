@@ -40,7 +40,7 @@ def main():
         with open(align_simple, "w", encoding="utf-8") as fp_simple, open(align_normal,"w", encoding="utf-8") as fp_normal:
             fp_simple.write("\n".join(easy_lines))
             fp_normal.write("\n".join(normal_lines))
-    with open("temp_res.json", "w", encoding="utf-8") as fp:
+    with open("results/alignments_with_distance.json", "w", encoding="utf-8") as fp:
         json.dump(alignment, fp, indent=4, ensure_ascii=False)
     
 
