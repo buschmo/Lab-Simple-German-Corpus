@@ -13,6 +13,7 @@ import platform
 import matching.utilities as utl
 from matching.defaultvalues import *
 
+SHORT = "vt" # None
 
 class gui:
     def __init__(self, root):
@@ -57,7 +58,12 @@ class gui:
 
         self.button_progress = tk.Button(
             self.mainframe, text="Show progress", command=self.show_progress)
-        self.button_progress.grid(column=0, row=1, sticky="w")
+        self.button_progress.grid(column=0, row=1, sticky="sw")
+
+        self.button_proceed = tk.Button(
+            self.mainframe, text="Only proceed", command=self.next_website)
+        self.button_proceed.grid(column=0, row=1, sticky="s")
+
         self.button_save = tk.Button(
             self.mainframe, text="Save and proceed", command=self.save)
         self.button_save.grid(column=0, row=1, sticky="e")
@@ -118,17 +124,26 @@ class gui:
         print(f"{n_aligned}/{n_sample} already aligned.")
 
     def next_website(self):
-        simple_path, normal_path = next(self.match_generator)
+        try:
+            simple_path, normal_path = next(self.match_generator)
+        except StopIteration:
+            quit()
+
         simple_file = simple_path.split("/")[-1]
         normal_file = normal_path.split("/")[-1]
 
-        # changes here, because my files have probably old names:
-        simple_path = os.path.join(os.path.split(simple_path)[0], "www." + os.path.split(simple_path)[1])
-        normal_path = os.path.join(os.path.split(normal_path)[0], "www." + os.path.split(normal_path)[1])
+        # changes here, because I use the files from sciebo:
+        if os.environ.get("LOGNAME") == "vtoborek":
+            simple_path = os.path.join(os.path.split(simple_path)[0], "www." + os.path.split(simple_path)[1])
+            normal_path = os.path.join(os.path.split(normal_path)[0], "www." + os.path.split(normal_path)[1])
+
+        print(f"New simple file: {os.path.split(simple_path)[1]}")
+        print(f"New standard file: {os.path.split(normal_path)[1]}")
 
         self.alignment = {}
+
         self.save_path_easy, self.save_path_normal = utl.make_hand_aligned_path(
-            simple_file, normal_file)
+            simple_file, normal_file, short=SHORT)
 
         # delete old contents
         for child in self.innerframe.winfo_children():
@@ -196,6 +211,9 @@ class gui:
                     fp_easy.write(easy)
                     fp_normal.write(normal)
         self.next_website()
+
+    def quit(self):
+        self.root.destroy()
 
 
 def prep_text(text):
