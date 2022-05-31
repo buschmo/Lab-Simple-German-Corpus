@@ -4,10 +4,10 @@ import pickle
 import random
 
 from collections import Counter
+from matching.defaultvalues import dataset_location
 
-data_samples = "/Users/vtoborek/Bonn/300 Research/300 Code/Simple-German-Corpus/evaluation/results/website_sample.pkl"
-apo_header = "/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/Datasets/www.apotheken-umschau.de/header.json"
-dataset_path = "/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/Datasets"
+data_samples = "results/website_sample.pkl"
+apo_header = os.path.join(dataset_location, "www.apotheken-umschau.de/header.json")
 
 with open(data_samples, "rb") as f:
     samples = pickle.load(f)
@@ -38,7 +38,7 @@ sample_from = ["www.lebenshilfe-main-taunus.de", "www.sozialpolitik.com", "www.b
 
 new_samples = []
 for s in sample_from:
-    with open(os.path.join(dataset_path, s, "header.json"), "rb") as f:
+    with open(os.path.join(dataset_location, s, "header.json"), "rb") as f:
         all_entries = json.load(f)
     # get paths of easy articles
     simple_entries = {k: v for k, v in all_entries.items() if v['easy']}
@@ -67,10 +67,10 @@ for entry in samples:
 rel_samples += new_samples
 print(rel_samples[0])
 
-# with open(os.path.join(os.path.split(data_samples)[0], "test_samples.pkl"), "wb") as f:
+# with open(os.path.join(os.path.split(data_samples)[0], "better_samples.pkl"), "wb") as f:
 #     pickle.dump(rel_samples, f)
 
-with open(os.path.join(os.path.split(data_samples)[0], "test_samples.pkl"), "rb") as fb:
+with open(os.path.join(os.path.split(data_samples)[0], "better_samples.pkl"), "rb") as fb:
     test_file = pickle.load(fb)
 
 print(f"Output of test_file: {test_file}")
