@@ -20,9 +20,10 @@ def main(from_archive: bool = False):
             header = utl.load_header(website_module.base_url)
             for key in header:
                 url = header[key]["url"]
-                soup = utl.read_soup(url)
                 filepath = utl.get_crawled_path_from_url(url)
-                utl.save_soup(soup, filepath)
+                if not os.path.exists(filepath):
+                    soup = utl.get_soup_from_url(url)
+                    utl.save_soup(soup, filepath)
     else:
         # TODO Implement crawling directly from the website
         print("Unaccounted case.")
