@@ -8,7 +8,7 @@
             "stadt-koeln.de__leben-in-koeln__soziales__eltern-beitrag-fuer-die-kinder-tages-einrichtung.html"
         ]
     },
-    "stadt-koeln.de__service__produkt__verpflichtungserklaerung-nach-68-sowie-66-67-des-aufenthalts.html": {
+    "stadt-koeln.de__service__produkt__verpflichtungserklaerung-nach-68-sowie-66-67-des-aufenthaltsgesetzes.html": {
         "url": "http://web.archive.org/web/20220529194108/https://www.stadt-koeln.de/service/produkt/verpflichtungserklaerung-nach-68-sowie-66-67-des-aufenthaltsgesetzes",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -152,7 +152,7 @@
             "stadt-koeln.de__politik-und-verwaltung__mitwirkung__systematische-oeffentlichkeitsbeteiligung__ueberblick.html"
         ]
     },
-    "stadt-koeln.de__service__produkt__anmeldung-eines-hundes.html": {
+    "stadt-koeln.de__service__produkt__anmeldung-eines-hundes-1.html": {
         "url": "http://web.archive.org/web/20220529193056/https://www.stadt-koeln.de/service/produkt/anmeldung-eines-hundes-1",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -170,7 +170,7 @@
             "stadt-koeln.de__service__produkt__tagespflege-fuer-ihr-kind-2.html"
         ]
     },
-    "stadt-koeln.de__service__produkt__widerspruchsrecht-gegen-weitergabe-von-meldedaten.html": {
+    "stadt-koeln.de__service__produkt__widerspruchsrecht-gegen-weitergabe-von-meldedaten-1.html": {
         "url": "http://web.archive.org/web/20220529194400/https://www.stadt-koeln.de/service/produkt/widerspruchsrecht-gegen-weitergabe-von-meldedaten-1",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -413,7 +413,7 @@
             "stadt-koeln.de__service__produkt__aenderung-nebenwohnsitz-hauptwohnsitz.html"
         ]
     },
-    "stadt-koeln.de__service__produkt__fuehrerschein-umtausch-gegen-europaeinheitlichen-eu-fuehrers.html": {
+    "stadt-koeln.de__service__produkte__fuehrerscheinumtausch.html": {
         "url": "http://web.archive.org/web/20220529193647/https://www.stadt-koeln.de/service/produkte/fuehrerscheinumtausch",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -503,7 +503,7 @@
             "stadt-koeln.de__leben-in-koeln__soziales__kinder-einschulen.html"
         ]
     },
-    "stadt-koeln.de__service__produkte__wohnberechtigungsschein.html": {
+    "stadt-koeln.de__service__produkt__wohnberechtigungsschein-wbs.html": {
         "url": "http://web.archive.org/web/20220529193443/https://www.stadt-koeln.de/service/produkt/wohnberechtigungsschein-wbs",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -548,7 +548,7 @@
             "stadt-koeln.de__leben-in-koeln__soziales__kurz-zeit-kennzeichen.html"
         ]
     },
-    "stadt-koeln.de__service__produkt__fuehrerschein-wiedererteilung-der-fahrerlaubnis.html": {
+    "stadt-koeln.de__service__produkt__fuehrerschein-wiedererteilung-der-fahrerlaubnis-1.html": {
         "url": "http://web.archive.org/web/20220529193745/https://www.stadt-koeln.de/service/produkt/fuehrerschein-wiedererteilung-der-fahrerlaubnis-1",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -1178,7 +1178,7 @@
             "stadt-koeln.de__service__produkt__beglaubigungen-1.html"
         ]
     },
-    "stadt-koeln.de__service__produkte__personalausweis.html": {
+    "stadt-koeln.de__service__meistgesucht__personalausweis.html": {
         "url": "http://web.archive.org/web/20220529193350/https://www.stadt-koeln.de/service/meistgesucht/personalausweis",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -1331,7 +1331,7 @@
             "stadt-koeln.de__service__produkt__kinderreisepass.html"
         ]
     },
-    "stadt-koeln.de__service__produkt__auto-nicht-auffindbar.html": {
+    "stadt-koeln.de__service__produkt__auto-nicht-auffindbar-1.html": {
         "url": "http://web.archive.org/web/20220529193145/https://www.stadt-koeln.de/service/produkt/auto-nicht-auffindbar-1",
         "crawl_date": "2022-01-29",
         "easy": false,
@@ -1475,7 +1475,7 @@
             "stadt-koeln.de__leben-in-koeln__soziales__lebens-partnerschaft-eine-ehe-umwandeln.html"
         ]
     },
-    "stadt-koeln.de__service__produkte__wunschkennzeichen.html": {
+    "stadt-koeln.de__service__produkt__wunschkennzeichen.html": {
         "url": "http://web.archive.org/web/20220529193546/https://www.stadt-koeln.de/service/produkt/wunschkennzeichen",
         "crawl_date": "2022-01-29",
         "easy": false,
