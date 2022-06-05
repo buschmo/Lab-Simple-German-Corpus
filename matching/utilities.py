@@ -511,7 +511,7 @@ def get_hash(string: str) -> int:
 
 def get_file_name_hash(simple_path: str, normal_path: str) -> int:
     # make hash from file name only, thus agnostic to folder structure
-    string = Path(simple_file).name + "___" + Path(normal_file).name
+    string = Path(simple_path).name + "___" + Path(normal_path).name
     return get_hash(string)
 
 
