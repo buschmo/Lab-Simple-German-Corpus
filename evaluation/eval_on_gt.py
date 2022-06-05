@@ -24,7 +24,6 @@ nlp = spacy.load("de_core_news_lg")
 # results = pd.DataFrame(columns=["sim_measure", "matching_method", "thres", "correct", "precision", "recall", "F1"])
 results = []
 
-
 def create_gt_dict(simple_path, normal_path, nlp) -> dict:
     """
     Creates a dictionary of aligned sentences for one article.
@@ -49,6 +48,11 @@ def create_gt_dict(simple_path, normal_path, nlp) -> dict:
     #                                              f"Simple {len(simple_sents)} vs. German {len(normal_sents)} " \
     #                                              f"for {simple_path}"
 
+    if len(simple_sents) != len(normal_sents):
+        print(f"Amount of German and simple German sentences doesn't match: "
+              f"Simple {len(simple_sents)} vs. German {len(normal_sents)} "
+              f"for {simple_path}")
+
     gt = {}
     for s, n in zip(simple_sents, normal_sents):
         gt[s] = n
@@ -72,9 +76,9 @@ for simple_article, article in samples:
         try:
             with open(os.path.join(path_to_matchings, os.path.split(name)[1])) as f:
                 alignments = json.load(f)
-        # TODO: find out, why some files are not found under matches
+        # TODO: why are some files not found under matches?
         except FileNotFoundError:
-            print(f">> FileNotFoundError: for article '{article_name}' with matching path '{name}'")
+            # print(f">> FileNotFoundError: for article '{article_name}' with matching path '{name}'")
             not_found += 1
             continue
 
@@ -90,7 +94,8 @@ for simple_article, article in samples:
             recall = correct_alignments / len(article_gt)
             F1 = 2 * (precision * recall) / (precision + recall)
         else:
-            print(f">>> No correct alignments found in {article} by {sim}-{match_m}-{thres}")
+            # TODO: is it reasonable that the are so many instances with not a single correct alignment?
+            # print(f">>> No correct alignments found in {article} by {sim}-{match_m}-{thres}")
             precision = 0
             recall = 0
             F1 = 0
