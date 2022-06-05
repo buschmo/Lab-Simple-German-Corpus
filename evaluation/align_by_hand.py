@@ -205,6 +205,10 @@ class gui:
         with open(self.save_path_easy, "w", encoding="utf-8") as fp_easy, open(self.save_path_normal, "w", encoding="utf-8") as fp_normal:
             for normal in self.alignment:
                 for easy in self.alignment[normal]:
+                    if not easy.endswith("\n"):
+                        easy += "\n"
+                    if not normal.endswith("\n"):
+                        normal += "\n"
                     fp_easy.write(easy)
                     fp_normal.write(normal)
         self.next_website()
