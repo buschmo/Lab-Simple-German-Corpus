@@ -1,4 +1,5 @@
 from typing import Union, List
+from pathlib import Path
 
 import spacy
 import re
@@ -508,18 +509,19 @@ def get_hash(string: str) -> int:
     return int(hashlib.sha1(string.encode("utf-8")).hexdigest(), 16)
 
 
-def get_file_name_hash(simple_file: str, normal_file: str) -> int:
-    string = simple_file + "___" + normal_file
+def get_file_name_hash(simple_path: str, normal_path: str) -> int:
+    # make hash from file name only, thus agnostic to folder structure
+    string = Path(simple_file).name + "___" + Path(normal_file).name
     return get_hash(string)
 
 
-def make_matching_path(simple_file: str, normal_file: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
-    hash = get_file_name_hash(simple_file, normal_file)
+def make_matching_path(simple_path: str, normal_path: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
+    hash = get_file_name_hash(simple_path, normal_path)
     return f"results/matched/{hash}--{sim_measure}--{matching}--{str(sd_threshold)}.matches"
 
 
-def make_hand_aligned_path(simple_file: str, normal_file: str, short: str = None) -> str:
-    hash = get_file_name_hash(simple_file, normal_file)
+def make_hand_aligned_path(simple_path: str, normal_path: str, short: str = None) -> str:
+    hash = get_file_name_hash(simple_path, normal_path)
     if short:
         simple = f"results/hand_aligned/{short}-{hash}.simple"
         normal = f"results/hand_aligned/{short}-{hash}.normal"
@@ -529,8 +531,8 @@ def make_hand_aligned_path(simple_file: str, normal_file: str, short: str = None
     return (simple, normal)
 
 
-def make_alignment_path(simple_file: str, normal_file: str) -> tuple[str, str]:
-    hash = get_file_name_hash(simple_file, normal_file)
+def make_alignment_path(simple_path: str, normal_path: str) -> tuple[str, str]:
+    hash = get_file_name_hash(simple_path, normal_path)
     simple = f"results/alignment/{hash}.simple"
     normal = f"results/alignment/{hash}.normal"
     return (simple, normal)
@@ -564,6 +566,6 @@ def get_website_hashes(root_dir: str = dataset_location)->list:
                     if not header[fname]['easy']:
                         continue
                     for parallel_article in header[fname]['matching_files']:
-                        website_hashes[website].append(get_file_name_hash(fname, parallel_article))
+                        website_hashes[website].append(get_file_name_hash(fname+".txt", parallel_article+".txt"))
 
     return website_hashes
