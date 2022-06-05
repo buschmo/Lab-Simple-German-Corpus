@@ -9,6 +9,7 @@ import pickle
 import math
 import random
 import platform
+from pathlib import Path
 
 import matching.utilities as utl
 from matching.defaultvalues import *
@@ -94,9 +95,9 @@ class gui:
                 self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
     def get_articles(self):
-        path = "results/better_samples.pkl"
+        path = "results/website_samples.pkl"
         if os.path.exists(path):
-            print("using better_samples")
+            print(f"Using presampled sites from {path}")
             # load existing subset
             with open(path, "rb") as fp:
                 self.pairs_sample = pickle.load(fp)
@@ -108,12 +109,11 @@ class gui:
                 # remove already aligned ones
                 pairs = [pair for pair in self.pairs if (not os.path.exists(
                     utl.make_hand_aligned_path(pair[0], pair[1])[0]))]
+                # relative path instead of absolute
+                pairs = [(Path(pair[0]).relative_to(dataset_location), Path(pair[1]).relative_to(dataset_location)) for pair in pairs]
 
                 self.pairs_sample = random.sample(pairs, k)
                 pickle.dump(self.pairs_sample, fp)
-
-        if os.environ.get("USERNAME") == "busch":
-            self.pairs_sample.reverse()
 
         for pair in self.pairs_sample:
             if not os.path.exists(utl.make_hand_aligned_path(pair[0], pair[1])[0]):
@@ -130,14 +130,7 @@ class gui:
         except StopIteration:
             quit()
 
-        simple_file = simple_path.split("/")[-1]
-        normal_file = normal_path.split("/")[-1]
-
-        # changes here, because I use the files from sciebo:
-        # if os.environ.get("LOGNAME") == "vtoborek":
-        #     simple_path = os.path.join(os.path.split(simple_path)[0], "www." + os.path.split(simple_path)[1])
-        #     normal_path = os.path.join(os.path.split(normal_path)[0], "www." + os.path.split(normal_path)[1])
-
+        # Paths from match_generator are relative to dataset_location
         simple_path = os.path.join(dataset_location, simple_path)
         normal_path = os.path.join(dataset_location, normal_path)
 
@@ -147,7 +140,7 @@ class gui:
         self.alignment = {}
 
         self.save_path_easy, self.save_path_normal = utl.make_hand_aligned_path(
-            simple_file, normal_file, short=SHORT)
+            simple_path, normal_path, short=SHORT)
 
         # delete old contents
         for child in self.innerframe.winfo_children():
