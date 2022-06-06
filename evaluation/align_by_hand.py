@@ -14,44 +14,90 @@ from pathlib import Path
 import matching.utilities as utl
 from matching.defaultvalues import *
 
-SHORT = "vt" # None
+SHORT = "vt"  # None
+
 
 class gui:
     def __init__(self, root):
         self.root = root
-        self.mainframe = ttk.Frame(root, padding="5")
+        self.mainframe = ttk.Frame(root, padding="5", height=720, width=1280)
         self.mainframe.grid(column=0, row=0, sticky="NEWS")
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
         # Canvas
-        self.canvas = tk.Canvas(self.mainframe, height=720, width=1280)
-        self.canvas.grid(column=0, row=0, sticky="NEWS")
-        self.mainframe.columnconfigure(0, weight=1)
-        self.mainframe.rowconfigure(0, weight=1)
+        self.canvas_left = tk.Canvas(self.mainframe  # , height=720, width=1280
+                                     )
+        self.canvas_left.grid(column=1, row=1, sticky="NEWS")
+        self.canvas_right = tk.Canvas(self.mainframe  # , height=720, width=1280
+                                      )
+        self.canvas_right.grid(column=2, row=1, sticky="NEWS")
 
-        # Scrollbar
-        self.scrollbar = ttk.Scrollbar(
-            self.mainframe, orient=tk.VERTICAL, command=self.canvas.yview)
-        self.scrollbar.grid(column=1, row=0, sticky="NS")
+        # Configure sizes of columns and rows in mainframe
+        self.mainframe.columnconfigure(1, weight=1)
+        self.mainframe.columnconfigure(2, weight=1)
+        self.mainframe.rowconfigure(1, weight=1)
+
+        # Titles
+
+        # Scrollbars
+        self.scrollbar_left = ttk.Scrollbar(
+            self.mainframe, orient=tk.VERTICAL, command=self.canvas_left.yview)
+        self.scrollbar_left.grid(column=0, row=1, sticky="NS")
+        self.scrollbar_right = ttk.Scrollbar(
+            self.mainframe, orient=tk.VERTICAL, command=self.canvas_right.yview)
+        self.scrollbar_right.grid(column=3, row=1, sticky="NS")
 
         # configure scrollbar
-        self.canvas.configure(yscrollcommand=self.scrollbar.set)
-        self.canvas.bind("<Configure>", self.update_canvas_layout)
+        self.canvas_left.configure(yscrollcommand=self.scrollbar_left.set)
+        self.canvas_left.bind("<Configure>", self.update_left_canvas_layout)
+        self.canvas_right.configure(yscrollcommand=self.scrollbar_right.set)
+        self.canvas_right.bind("<Configure>", self.update_right_canvas_layout)
+
+        # Innerframes
+        self.leftframe = ttk.Frame(self.canvas_left, padding="5")
+        self.leftframe.grid(column=0, row=0, sticky="NEWS")
+        self.canvas_left.create_window(
+            0, 0, anchor="nw", window=self.leftframe)
+        self.canvas_left.columnconfigure(0, weight=1)
+        self.canvas_left.rowconfigure(0, weight=1)
+
+        self.rightframe = ttk.Frame(self.canvas_right, padding="5")
+        self.rightframe.grid(column=0, row=0, sticky="NEWS")
+        self.canvas_right.create_window(
+            0, 0, anchor="nw", window=self.rightframe)
+        self.canvas_right.columnconfigure(0, weight=1)
+        self.canvas_right.rowconfigure(0, weight=1)
+
+        # configure sizes of columns and rows in innerframes
+        self.leftframe.columnconfigure(0, weight=1)
+        self.leftframe.rowconfigure(0, weight=1)
+        self.rightframe.columnconfigure(0, weight=1)
+        self.rightframe.rowconfigure(0, weight=1)
 
         # MouseWheel action
-        self.root.bind_all("<MouseWheel>", self.on_mousewheel)
-        self.root.bind_all("<Button-4>", self.on_mousewheel)
-        self.root.bind_all("<Button-5>", self.on_mousewheel)
+        def bind_mousewheel(widget, command):
+            def bind(widget, command):
+                widget.bind_all("<MouseWheel>", command)
+                widget.bind_all("<Button-4>", command)
+                widget.bind_all("<Button-5>", command)
 
-        # configure innerframe
-        self.innerframe = ttk.Frame(self.canvas, padding="5")
-        self.innerframe.grid(column=0, row=0, sticky="NEWS")
-        self.canvas.create_window(0, 0, anchor="nw", window=self.innerframe)
-        self.canvas.columnconfigure(0, weight=1)
-        self.canvas.rowconfigure(0, weight=1)
-        self.innerframe.columnconfigure(0, weight=1)
-        self.innerframe.columnconfigure(1, weight=1)
-        self.innerframe.columnconfigure(2, weight=1)
+            def unbind(widget):
+                widget.unbind_all("<MouseWheel>")
+                widget.unbind_all("<Button-4>")
+                widget.unbind_all("<Button-5>")
+            widget.bind("<Enter>", lambda _: bind(widget, command))
+            widget.bind("<Leave>", lambda _: unbind(widget))
+
+        bind_mousewheel(self.canvas_left, self.on_mousewheel_left)
+        bind_mousewheel(self.canvas_right, self.on_mousewheel_right)
+
+        # self.canvas_left.bind_all("<MouseWheel>", self.on_mousewheel_left)
+        # self.canvas_left.bind_all("<Button-4>", self.on_mousewheel_left)
+        # self.canvas_left.bind_all("<Button-5>", self.on_mousewheel_left)
+
+        # self.canvas_right.bind_all("<MouseWheel>", self.on_mousewheel_right)
+        # self.canvas_right.bind_all("<Button-4>", self.on_mousewheel_right)
+        # self.canvas_right.bind_all("<Button-5>", self.on_mousewheel_right)
 
         self.normal_radio = self.easy_check = []
         self.match_generator = self.get_articles()
@@ -59,40 +105,69 @@ class gui:
 
         self.button_progress = tk.Button(
             self.mainframe, text="Show progress", command=self.show_progress)
-        self.button_progress.grid(column=0, row=1, sticky="sw")
+        self.button_progress.grid(column=1, row=2, sticky="w")
 
         self.button_proceed = tk.Button(
             self.mainframe, text="Only proceed", command=self.next_website)
-        self.button_proceed.grid(column=0, row=1, sticky="s")
+        self.button_proceed.grid(column=1, row=2, sticky="e")
 
         self.button_save = tk.Button(
             self.mainframe, text="Save and proceed", command=self.save)
-        self.button_save.grid(column=0, row=1, sticky="e")
+        self.button_save.grid(column=2, row=2, sticky="e")
         self.next_website()
 
-    def update_canvas_layout(self, event):
-        self.canvas.config(scrollregion=self.canvas.bbox("all"))
-        wraplength = int(event.width/2-50)
-        for label in self.easy_labels:
-            label.configure(wraplength=wraplength)
+    def update_left_canvas_layout(self, event):
+        self.canvas_left.config(scrollregion=self.canvas_left.bbox("all"))
+        wraplength = int(event.width-50)
+        # for label in self.easy_labels:
+        # label.configure(wraplength=wraplength)
         for radio in self.normal_radio:
             radio.configure(wraplength=wraplength)
 
-    def on_mousewheel(self, event):
-        delta = 1
+    def update_right_canvas_layout(self, event):
+        self.canvas_right.config(scrollregion=self.canvas_right.bbox("all"))
+        wraplength = int(event.width-50)
+        for label in self.easy_labels:
+            label.configure(wraplength=wraplength)
+        # for radio in self.normal_radio:
+        #     radio.configure(wraplength=wraplength)
 
+    def on_mousewheel_left(self, event):
+        delta = 1
         # make mousewheel work in macOS
         if platform.system() == "Darwin":
-            self.canvas.yview_scroll(-1 * event.delta, "units")
+            self.canvas_left.yview_scroll(-1 * event.delta, "units")
         else:
             if event.num == 5:
                 # scroll down
-                self.canvas.yview_scroll(delta, "units")
+                self.canvas_left.yview_scroll(delta, "units")
             elif event.num == 4:
                 # scroll up
-                self.canvas.yview_scroll(-delta, "units")
+                self.canvas_left.yview_scroll(-delta, "units")
             else:
-                self.canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+                self.canvas_left.yview_scroll(
+                    int(-1*(event.delta/120)), "units")
+
+    def on_mousewheel_right(self, event):
+        delta = 1
+        # make mousewheel work in macOS
+        if platform.system() == "Darwin":
+            self.canvas_right.yview_scroll(-1 * event.delta, "units")
+        else:
+            if event.num == 5:
+                # scroll down
+                self.canvas_right.yview_scroll(delta, "units")
+            elif event.num == 4:
+                # scroll up
+                self.canvas_right.yview_scroll(-delta, "units")
+            else:
+                self.canvas_right.yview_scroll(
+                    int(-1*(event.delta/120)), "units")
+
+    def show_progress(self):
+        n_aligned = int(len(os.listdir("results/hand_aligned"))/2)
+        n_sample = len(self.pairs_sample)
+        print(f"{n_aligned}/{n_sample} already aligned.")
 
     def get_articles(self):
         path = "results/website_samples.pkl"
@@ -110,7 +185,8 @@ class gui:
                 pairs = [pair for pair in self.pairs if (not os.path.exists(
                     utl.make_hand_aligned_path(pair[0], pair[1])[0]))]
                 # relative path instead of absolute
-                pairs = [(Path(pair[0]).relative_to(dataset_location), Path(pair[1]).relative_to(dataset_location)) for pair in pairs]
+                pairs = [(Path(pair[0]).relative_to(dataset_location), Path(
+                    pair[1]).relative_to(dataset_location)) for pair in pairs]
 
                 self.pairs_sample = random.sample(pairs, k)
                 pickle.dump(self.pairs_sample, fp)
@@ -118,11 +194,6 @@ class gui:
         for pair in self.pairs_sample:
             if not os.path.exists(utl.make_hand_aligned_path(pair[0], pair[1])[0]):
                 yield pair
-
-    def show_progress(self):
-        n_aligned = int(len(os.listdir("results/hand_aligned"))/2)
-        n_sample = len(self.pairs_sample)
-        print(f"{n_aligned}/{n_sample} already aligned.")
 
     def next_website(self):
         try:
@@ -143,7 +214,9 @@ class gui:
             simple_path, normal_path, short=SHORT)
 
         # delete old contents
-        for child in self.innerframe.winfo_children():
+        for child in self.leftframe.winfo_children():
+            child.destroy()
+        for child in self.rightframe.winfo_children():
             child.destroy()
 
         # setup new boxes
@@ -153,14 +226,14 @@ class gui:
             self.easy_check_bool = []
             self.easy_labels = []
 
-            # Add easy lines
+            # Add easy lines to the right
             self.easy_lines = prep_text(fp.read())
             for i, line in enumerate(self.easy_lines):
                 value = tk.BooleanVar(value=False)
                 check = ttk.Checkbutton(
-                    self.innerframe, text="", variable=value, command=self.pair_to_normal)
+                    self.rightframe, text="", variable=value, command=self.pair_to_normal)
                 check.grid(column=1, row=i, sticky="NEWS")
-                label = ttk.Label(self.innerframe, text=line,
+                label = ttk.Label(self.rightframe, text=line,
                                   wraplength=wraplength, justify="left")
                 label.grid(column=2, row=i, sticky="NEWS")
                 self.easy_check_bool.append(value)
@@ -172,9 +245,9 @@ class gui:
             self.normal_radio = []
             self.normal_lines = prep_text(fp.read())
 
-            # Add normal lines
+            # Add normal lines to the left
             for i, line in enumerate(self.normal_lines):
-                radio = tk.Radiobutton(self.innerframe, text=line, variable=self.normal_sentence,
+                radio = tk.Radiobutton(self.leftframe, text=line, variable=self.normal_sentence,
                                        value=line, command=self.show_paired_easy, wraplength=wraplength, justify="left")
                 radio.grid(column=0, row=i, sticky="W")
                 self.normal_radio.append(radio)
