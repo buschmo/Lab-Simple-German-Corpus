@@ -38,6 +38,10 @@ class gui:
         self.mainframe.rowconfigure(1, weight=1)
 
         # Titles
+        self.left_title = tk.Label(self.mainframe, text="Normal sentence")
+        self.left_title.grid(column=1, row=0, sticky="news")
+        self.right_title = tk.Label(self.mainframe, text="Simple sentence")
+        self.right_title.grid(column=2, row=0, sticky="news")
 
         # Scrollbars
         self.scrollbar_left = ttk.Scrollbar(
