@@ -38,10 +38,12 @@ class gui:
         self.mainframe.rowconfigure(1, weight=1)
 
         # Titles
-        self.left_title = tk.Label(self.mainframe, text="Normal sentence")
+        self.left_title = ttk.Label(self.mainframe, text="Normal sentence")
         self.left_title.grid(column=1, row=0, sticky="news")
-        self.right_title = tk.Label(self.mainframe, text="Simple sentence")
+        self.right_title = ttk.Label(self.mainframe, text="Simple sentence")
         self.right_title.grid(column=2, row=0, sticky="news")
+        ttk.Style().configure("used.TLabel", foreground="grey")
+        # self.right_title["style"] = "used.TLabel"
 
         # Scrollbars
         self.scrollbar_left = ttk.Scrollbar(
@@ -95,15 +97,6 @@ class gui:
         bind_mousewheel(self.canvas_left, self.on_mousewheel_left)
         bind_mousewheel(self.canvas_right, self.on_mousewheel_right)
 
-        # self.canvas_left.bind_all("<MouseWheel>", self.on_mousewheel_left)
-        # self.canvas_left.bind_all("<Button-4>", self.on_mousewheel_left)
-        # self.canvas_left.bind_all("<Button-5>", self.on_mousewheel_left)
-
-        # self.canvas_right.bind_all("<MouseWheel>", self.on_mousewheel_right)
-        # self.canvas_right.bind_all("<Button-4>", self.on_mousewheel_right)
-        # self.canvas_right.bind_all("<Button-5>", self.on_mousewheel_right)
-
-        self.normal_radio = self.easy_check = []
         self.match_generator = self.get_articles()
         self.pairs = utl.get_article_pairs()
 
@@ -123,18 +116,14 @@ class gui:
     def update_left_canvas_layout(self, event):
         self.canvas_left.config(scrollregion=self.canvas_left.bbox("all"))
         wraplength = int(event.width-50)
-        # for label in self.easy_labels:
-        # label.configure(wraplength=wraplength)
-        for radio in self.normal_radio:
-            radio.configure(wraplength=wraplength)
+        for label in self.normal_labels.values():
+            label.configure(wraplength=wraplength)
 
     def update_right_canvas_layout(self, event):
         self.canvas_right.config(scrollregion=self.canvas_right.bbox("all"))
         wraplength = int(event.width-50)
         for label in self.easy_labels:
             label.configure(wraplength=wraplength)
-        # for radio in self.normal_radio:
-        #     radio.configure(wraplength=wraplength)
 
     def on_mousewheel_left(self, event):
         delta = 1
@@ -212,8 +201,6 @@ class gui:
         print(f"New simple file: {os.path.split(simple_path)[1]}")
         print(f"New standard file: {os.path.split(normal_path)[1]}")
 
-        self.alignment = {}
-
         self.save_path_easy, self.save_path_normal = utl.make_hand_aligned_path(
             simple_path, normal_path, short=SHORT)
 
@@ -236,25 +223,29 @@ class gui:
                 value = tk.BooleanVar(value=False)
                 check = ttk.Checkbutton(
                     self.rightframe, text="", variable=value, command=self.pair_to_normal)
-                check.grid(column=1, row=i, sticky="NEWS")
+                check.grid(column=0, row=i, sticky="NEWS")
                 label = ttk.Label(self.rightframe, text=line,
                                   wraplength=wraplength, justify="left")
-                label.grid(column=2, row=i, sticky="NEWS")
+                label.grid(column=1, row=i, sticky="NEWS")
                 self.easy_check_bool.append(value)
                 self.easy_check.append(check)
                 self.easy_labels.append(label)
 
         with open(normal_path) as fp:
             self.normal_sentence = tk.StringVar()
-            self.normal_radio = []
+            self.alignment = {}
+            self.normal_labels = {}
             self.normal_lines = prep_text(fp.read())
 
             # Add normal lines to the left
             for i, line in enumerate(self.normal_lines):
-                radio = tk.Radiobutton(self.leftframe, text=line, variable=self.normal_sentence,
-                                       value=line, command=self.show_paired_easy, wraplength=wraplength, justify="left")
-                radio.grid(column=0, row=i, sticky="W")
-                self.normal_radio.append(radio)
+                radio = tk.Radiobutton(self.leftframe, text="", variable=self.normal_sentence,
+                                       value=line, command=self.show_paired_easy)
+                radio.grid(column=0, row=i, sticky="news")
+                label = ttk.Label(self.leftframe, text=line,
+                                  wraplength=wraplength, justify="left")
+                label.grid(column=1, row=i, sticky="news")
+                self.normal_labels[line] = label
                 self.alignment[line] = []
             # set default to first sentence
             self.normal_sentence.set(self.normal_lines[0])
@@ -269,6 +260,10 @@ class gui:
         for i, line in enumerate(self.easy_lines):
             if self.easy_check_bool[i].get() and self.easy_check[i].instate(["!disabled"]):
                 self.alignment[normal_sentence].append(line)
+        if len(self.alignment[normal_sentence]):
+            self.normal_labels[normal_sentence]["style"] = "used.TLabel"
+        else:
+            self.normal_labels[normal_sentence]["style"] = "TLabel"
 
     def show_paired_easy(self):
         normal_sentence = self.normal_sentence.get()
