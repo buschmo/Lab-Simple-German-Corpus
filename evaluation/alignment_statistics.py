@@ -10,9 +10,11 @@ nlp = spacy.load("de_core_news_lg")
 def get_tokens(text):
     text = "".join(text).replace('\n', ' ')
     text = re.sub('\s+', ' ', text)
-    all_tokens = []
-    for s in nlp(text).sents:
-        all_tokens += [token.text for token in s if not token.is_punct]
+    # all_tokens = []
+    # for s in nlp(text).sents:
+    #     all_tokens += [token.text for token in s if not token.is_punct]
+
+    all_tokens = [str(w) for w in nlp(text) if not w.is_punct]
     return all_tokens
 
 
@@ -28,14 +30,17 @@ for website in website_hashes:
     counter[website] = 0
     counter_tokens[website] = 0
     for hash in website_hashes[website]:
-        path = f"/results/alignment/{hash}.normal"
+        path = f"/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/results/alignment/{hash}.normal"
         if os.path.exists(path):
             with open(path) as fp:
                 lines = fp.readlines()
-                counter[website] += len(lines)
-                tokens = len(get_tokens(lines))
+                # counter[website] += len(lines)
+                counter[website] += len(set(lines))
+                # tokens = len(get_tokens(lines))
+                tokens = len(get_tokens(set(lines)))
                 counter_tokens[website] += tokens
-                sentences += len(lines)
+                # sentences += len(lines)
+                sentences += len(set(lines))
                 total_tokens += tokens
         # else:
         #     print(f"Not found {hash}")
