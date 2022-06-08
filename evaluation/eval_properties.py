@@ -10,7 +10,7 @@ import pandas as pd
 
 
 def test_number_of_files():
-    with open("results/header_matching.json") as fp:
+    with open("/results/header_matching.json") as fp:
         header = json.load(fp)
         print(f"Total number of evaluated files: {len(set(header.keys()))}")
 
@@ -99,13 +99,14 @@ def test_lengths(article_pairs=None, plot=False):
     len_words_normal = []
 
     for (art_simple, art_complex) in article_pairs:
-        url = art_simple.split('/')[-1][:10]
+        url = art_simple.split('/')[-1][:8]
         if url not in stats:
             stats[url] = {"len_simple": [], "len_normal": [], "sents_simple": [],
                           "sents_normal": [], "length_sents_simple": [],
                           "length_sents_normal": [], "length_sents_words_simple": [],
                           "length_sents_words_normal": [], "words_simple": [], "words_normal": [],
-                          "len_words_simple": [], "len_words_normal": []}
+                          "len_words_simple": [], "len_words_normal": [],
+                          "tokens_simple": [], "tokens_normal": []}
         with open(art_simple, 'r') as fp:
             article1 = fp.read()
             len_simple.append(len(article1))
@@ -127,6 +128,7 @@ def test_lengths(article_pairs=None, plot=False):
                 words.add(str(word))
                 len_words_simple.append(len(str(word)))
                 stats[url]["len_words_simple"].append(len(str(word)))
+                stats[url]["tokens_simple"].append(str(word))
             words_simple.append(len(words))
             stats[url]["words_simple"].append(len(words))
 
@@ -151,6 +153,7 @@ def test_lengths(article_pairs=None, plot=False):
                 words.add(str(word))
                 len_words_normal.append(len(str(word)))
                 stats[url]["len_words_normal"].append(len(str(word)))
+                stats[url]["tokens_normal"].append(str(word))
             words_normal.append(len(words))
             stats[url]["words_normal"].append(len(words))
 
@@ -211,13 +214,13 @@ def test_lengths(article_pairs=None, plot=False):
                           "sents_normal", "length_sents_simple",
                           "length_sents_normal", "length_sents_words_simple",
                           "length_sents_words_normal", "words_simple", "words_normal",
-                          "len_words_simple", "len_words_normal"]
+                          "len_words_simple", "len_words_normal", "tokens_simple", "tokens_normal"]
     print(" & ".join(options) + " \\\\")
     for elem in stats.keys():
-        print(elem + " & " + " & ".join([str(np.round(np.mean(stats[elem][x]))) for x in options]) + " \\\\")
+        print(elem + " & " + " & ".join([str(np.round(np.mean(stats[elem][x]))) for x in options[:-2]]) + f" & {len(stats[elem]['tokens_simple'])} & {len(stats[elem]['tokens_normal'])}" + " \\\\")
 
     print("\\bottomrule\n\\end{tabular}")
-
+    print()
 
 
     if plot:
@@ -259,7 +262,7 @@ if __name__ == '__main__':
 
     percentage_correct, different_arts = test_identical()
 
-    test_lengths(different_arts, plot=True)
+    test_lengths(different_arts, plot=False)
 
 import sys
 
