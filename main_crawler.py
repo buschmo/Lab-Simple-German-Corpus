@@ -7,6 +7,14 @@ import crawler.utilities as utl
 
 
 def main(from_archive: bool = False):
+    """ Downloads, saves and parses websites
+    Either archived websites specified by archive_header.json will be downloaded and parsed
+    or 
+
+    Args:
+        from_archive (bool, optional): use archive_header.json or actually call the crawlers. Defaults to False.
+    """
+
     utl = crawler.utilities
     utl.from_archive = from_archive
 
@@ -28,9 +36,9 @@ def main(from_archive: bool = False):
         # TODO Implement crawling directly from the website
         print("Unaccounted case.")
 
-
     # Parsing
     for name in crawler.__all__:
+        # load the module in crawler/"name".py
         website_module = getattr(crawler, name)
         print(f"Parsing {website_module.base_url}")
         if name == "brandeins":

@@ -6,7 +6,7 @@ import os
 import json
 
 """ This files is an example file for automatically archiving websites.
-    It is not intended to be used
+    As it is not intended to be used, it will not be documented.
 """
 
 
