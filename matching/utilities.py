@@ -9,6 +9,7 @@ import json
 import hashlib
 
 from spacy.tokens import Doc
+from typing import Iterator
 
 from matching import defaultvalues
 
@@ -19,27 +20,24 @@ dataset_location = defaultvalues.dataset_location
 stopwords = nlp.Defaults.stop_words
 
 
-def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, remove_gender: bool = True,
-               lemmatization: bool = False, spacy_sentences: bool = True, remove_stopwords: bool = False,
-               remove_punctuation: bool = False) \
-        -> list[Doc]:
-    """
-    Preprocesses a string according to parameters that can be set by the user.
+def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, remove_gender: bool = True, lemmatization: bool = False, spacy_sentences: bool = True, remove_stopwords: bool = False, remove_punctuation: bool = False) -> list[Doc]:
+    """ Preprocesses a string according to parameters that can be set by the user.
 
     Args:
-        text: string that is to be preprocessed
-        remove_hyphens: if true, removes hyphens of the form '-[A-Z]' (often found in Simple German) from the text
-        lowercase: lowercases the article
-        remove_gender: removes German gendering endings like *in or *innen
-        lemmatization: lemmatizes the text
-        spacy_sentences: removes the paragraphs from the text and thereby forces spacy to determine sentence borders
-        remove_stopwords: removes stopwords for German as defined internally by spacy
-        remove_punctuation: Removes punctuation marks
+        text (str): string that is to be preprocessed
+        remove_hyphens (bool, optional): if true, removes hyphens of the form '-[A-Z]' (often found in Simple German) from the text
+        lowercase (bool, optional): lowercases the article
+        remove_gender (bool, optional): removes German gendering endings like *in or *innen
+        lemmatization (bool, optional): lemmatizes the text
+        spacy_sentences (bool, optional): removes the paragraphs from the text and thereby forces spacy to determine sentence borders
+        remove_stopwords (bool, optional): removes stopwords for German as defined internally by spacy
+        remove_punctuation (bool, optional): Removes punctuation marks
 
     Returns:
-        A list of sentences, each in spacy format (e.g., including embedding vectors)
+        list[Doc]: A list of sentences, each in spacy format (e.g., including embedding vectors)
     """
     if spacy_sentences:
+        # spacy splits sentences on its own, so no newline for every sentence is needed
         text = text.replace('\n', ' ')
         text = re.sub('\s+', ' ', text)
 
@@ -91,8 +89,7 @@ def preprocess(text: str, remove_hyphens: bool = True, lowercase: bool = True, r
 
 
 def _kill_hyphen(matchobj) -> str:
-    """
-    Helper function to remove hyphens
+    """ Helper function to remove hyphens
 
     Args:
         matchobj: matching object of re library
@@ -104,8 +101,7 @@ def _kill_hyphen(matchobj) -> str:
 
 
 def _kill_binnenI(matchobj) -> str:
-    """
-    Helper function to remove the German Binnen-I (PilotInnen)
+    """ Helper function to remove the German Binnen-I (PilotInnen)
 
     Args:
         matchobj: matching object of re library
@@ -116,9 +112,11 @@ def _kill_binnenI(matchobj) -> str:
     return matchobj.group(0)[0]
 
 
-def get_unnested_articles(art_pairs=None) -> set[str]:
-    """
-    Uses the function get_article_pairs to get all articles, then calculates the complete set of articles
+def get_unnested_articles(art_pairs: list[tuple[str, str]] = None) -> set[str]:
+    """ Uses the function get_article_pairs to get all articles, then calculates the complete set of articles
+
+    Args:
+        art_pairs (list[tuple[str, str]], optional): list of article pairs
 
     Returns:
         Set of all articles
@@ -136,11 +134,13 @@ def get_unnested_articles(art_pairs=None) -> set[str]:
 
 
 def get_exemplary_article_pairs(root_dir: str = dataset_location) -> list[tuple[str, str]]:
-    """
-    Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory, one per source
+    """ Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory, one per source
 
     Args:
-        root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in exemplary_header.json files
+        root_dir (str, optional): Directory in which to find the articles, potentially nested. Info needs to be given in exemplary_header.json files
+
+    Returns: 
+        list[tuple[str, str]]: list of tuples in the form of (easy_article, normal_article) in the specified directory, one per source
     """
     parallel_list = []
     for root, dirs, files in os.walk(root_dir):
@@ -157,12 +157,14 @@ def get_exemplary_article_pairs(root_dir: str = dataset_location) -> list[tuple[
     return parallel_list
 
 
-def get_article_pairs(root_dir: str = dataset_location) -> list:
-    """
-    Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory
+def get_article_pairs(root_dir: str = dataset_location) -> list[tuple[str, str]]:
+    """ Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory
 
     Args:
-        root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in parsed_header.json files
+        root_dir (str, optional): Directory in which to find the articles, potentially nested. Info needs to be given in parsed_header.json files
+
+    Returns:
+        list[tuple[str,str]]: list of tuples in the form of (easy_article, normal_article) in the specified directory
     """
     parallel_list = []
     for root, dirs, files in os.walk(root_dir):
@@ -191,16 +193,15 @@ def get_article_pairs(root_dir: str = dataset_location) -> list:
 
 
 def calculate_full_n_gram_idf(articles: set[str], n=3, **kwargs) -> dict[str, float]:
-    """
-    Calculates the inverse document frequency, the inverse fraction of articles a n-gram appears in.
+    """ Calculates the inverse document frequency, the inverse fraction of articles a n-gram appears in.
 
     Args:
-        articles: list of article paths
-        n: specify for n-gram
+        articles (set[str]): list of article paths
+        n (int, optional): specify for n-gram
         **kwargs: arguments needed for preprocessing, can include remove_hyphens=True, lowercase, remove_gender, lemmatization, spacy_sentences, remove_stopwords, remove_punctuation
 
     Returns:
-        idf dictionary from the articles
+        dict[str, float]: idf dictionary from the articles
     """
     idf_dict = dict()
     article_count = 0
@@ -236,18 +237,17 @@ def calculate_full_n_gram_idf(articles: set[str], n=3, **kwargs) -> dict[str, fl
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
-def calculate_full_n_gram_idf_from_texts(text_list: set[str], n=3, **kwargs) -> dict[str, float]:
-    """
-    Same as calculate_full_n_gram_idf, only for list of texts instead of file paths
+def calculate_full_n_gram_idf_from_texts(text_list: set[str], n: int = 3, **kwargs) -> dict[str, float]:
+    """ Same as calculate_full_n_gram_idf, only for list of texts instead of file paths
 
     Args:
-        articles: Set of article texts
-        n: specify for n-gram
+        articles (set[str]): Set of article texts
+        n (int, optional): specify for n-gram
         **kwargs: arguments needed for preprocessing, can include remove_hyphens=True, lowercase, remove_gender, lemmatization, spacy_sentences, remove_stopwords, remove_punctuation
 
 
     Returns:
-        idf dictionary from the articles
+        dict[str, float]: idf dictionary from the articles
     """
     idf_dict = dict()
     article_count = 0
@@ -276,15 +276,14 @@ def calculate_full_n_gram_idf_from_texts(text_list: set[str], n=3, **kwargs) -> 
 
 
 def calculate_full_word_idf(articles: set[str], **kwargs) -> dict[str, float]:
-    """
-    Calculates idf for words
+    """ Calculates idf for words
 
     Args:
-        articles: list of article paths
+        articles (set[str]): list of article paths
         **kwargs: argument dict for preprocessing
 
     Returns:
-        idf for the articles
+        dict[str, float]: idf for the articles
     """
     idf_dict = dict()
     article_count = 0
@@ -319,18 +318,17 @@ def calculate_full_word_idf(articles: set[str], **kwargs) -> dict[str, float]:
     return {k: np.log(article_count / v) for k, v in idf_dict.items()}
 
 
-# TODO This function is never used and might be unnecessary
-def calculate_n_gram_tf_from_article(article: str, n=3, **kwargs) -> dict[str, float]:
-    """
-    Calculates a n-gram tf dict for the text in the file path
+# TODO This function is never used
+def calculate_n_gram_tf_from_article(article: str, n: int = 3, **kwargs) -> dict[str, float]:
+    """ Calculates a n-gram tf dict for the text in the file path
 
     Args:
-        article: file path
-        n: specify for n-gram
+        article (str): file path
+        n (int, optional): specify for n-gram
         **kwargs: arguments for preprocessing, if applicable
 
     Returns:
-        The n-gram tf dictionary
+        dict[str, float]: The n-gram tf dictionary
     """
     try:
         with open(article, 'r') as fp:
@@ -344,15 +342,14 @@ def calculate_n_gram_tf_from_article(article: str, n=3, **kwargs) -> dict[str, f
 
 
 def calculate_n_gram_tf(preprocessed_text: list[Doc], n: int = 3) -> dict[str, float]:
-    """
-    Calculates the n-gram tf dictionary for a given text
+    """ Calculates the n-gram tf dictionary for a given text
 
     Args:
-        preprocessed_text: text string, needs to be already preprocessed, in the form [s1, s2, s3, ...]!
-        n: specified for n-gram length
+        preprocessed_text (list[Doc]): text string, needs to be already preprocessed, in the form [s1, s2, s3, ...]!
+        n (int, optional): specified for n-gram length
 
     Returns:
-        tf dictionary for the given text
+        dict[str, float]: tf dictionary for the given text
     """
     n_gram_dict = dict()
 
@@ -373,14 +370,13 @@ def calculate_n_gram_tf(preprocessed_text: list[Doc], n: int = 3) -> dict[str, f
 
 
 def calculate_word_tf(text: list[Doc]) -> dict[str, float]:
-    """
-        Calculates the n-gram tf dictionary for a given text
+    """ Calculates the n-gram tf dictionary for a given text
 
         Args:
-            text: text, needs to be already preprocessed and in spacy format!
+            text (List[Doc]): text, needs to be already preprocessed and in spacy format!
 
         Returns:
-            tf dictionary for the given text
+            dict[str, float]: tf dictionary for the given text
         """
     text = nlp(' '.join([str(sent) for sent in text]))
 
@@ -398,31 +394,29 @@ def calculate_word_tf(text: list[Doc]) -> dict[str, float]:
     return tf_dict
 
 
-def make_n_grams(doc, n=3) -> list[str]:
-    """
-    Creates a list of n-grams for a given text
+def make_n_grams(doc: str, n: int = 3) -> list[str]:
+    """ Creates a list of n-grams for a given text
 
     Args:
-        doc: spacy document or text string
-        n: specify for n-gram length
+        doc (str): spacy document or text string
+        n (int, optional): specify for n-gram length
 
     Returns:
-        list of n-grams
+        list[str]: list of n-grams
     """
     return [str(doc[i:i + n]) for i in range(len(doc) - n + 1)]
 
 
 def weighted(elem, tf: dict[str, float], idf: dict[str, float]) -> float:
-    """
-    Given an element and a tf and idf dictionary, returns the tf*idf value for this element
+    """ Given an element and a tf and idf dictionary, returns the tf*idf value for this element
 
     Args:
-        elem: string or word
-        tf: tf dictionary
-        idf: idf dictionary
+        elem (str): string or word
+        tf (dict[str, float]): tf dictionary
+        idf (dict[str, float]): idf dictionary
 
     Returns:
-        Value, i.e., tf[elem] * idf[elem] or 0 if the element is not existent in either dictionary
+        float: Value, i.e., tf[elem] * idf[elem] or 0 if the element is not existent in either dictionary
     """
     str_elem = str(elem)
     if str_elem not in tf:
@@ -433,17 +427,18 @@ def weighted(elem, tf: dict[str, float], idf: dict[str, float]) -> float:
 
 
 def article_generator(matched_article_list: list[tuple[str, str]], *preprocessing_options) \
-        -> tuple[str, str, list[Doc], list[Doc], list[Doc], list[Doc]]:
-    """
-    Generator function that iteratively returns preprocessed articles.
+        -> Iterator[tuple[str, str, list[Doc], list[Doc], list[Doc], list[Doc]]]:
+    """ Generator function that iteratively returns preprocessed articles.
 
     Args:
-        matched_article_list: List of article pairs that is iterated through
+        matched_article_list (list[tuple[str, str]]): List of article pairs that is iterated through
         *preprocessing_options: 1 or many preprocessing options.
 
-    Returns:
-        simple and normal link to file and preprocessed articles in the form simple_preprocessed(option_1), (..., simple_preprocessed(option_n)), normal_preprocessed(option_1), (..., normal_preprocessed(option_n))
+    Yields:
+        Iterator[tuple[str, str, list[Doc], list[Doc], list[Doc], list[Doc]]]: simple and normal link to file and preprocessed articles in the form
+            simple_preprocessed(option_1), (..., simple_preprocessed(option_n)), normal_preprocessed(option_1), (..., normal_preprocessed(option_n))
     """
+
     for simple, normal in matched_article_list:
         simple_arts = []
         normal_arts = []
@@ -467,6 +462,15 @@ def article_generator(matched_article_list: list[tuple[str, str]], *preprocessin
 
 
 def get_original_text_preprocessed(text: str, spacy_sentences: bool = True) -> list[Doc]:
+    """ Given a string, returns its preprocessed form
+
+    Args:
+        text (str): the text
+        spacy_sentences (bool, optional): use spacy sentence spliting or spliting line by line. Defaults to True.
+
+    Returns:
+        list[Doc]: list of sentences in spacy.Doc format
+    """
     if spacy_sentences:
         text = text.replace('\n', ' ')
         text = re.sub('\s+', ' ', text)
@@ -477,26 +481,25 @@ def get_original_text_preprocessed(text: str, spacy_sentences: bool = True) -> l
     return sent_list
 
 
-def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=True, lemmatization=False,
-                            spacy_sentences=True,
-                            remove_stopwords=False, remove_punctuation=False) \
+def make_preprocessing_dict(remove_hyphens: bool = True, lowercase: bool = True, remove_gender: bool = True, lemmatization: bool = False,
+                            spacy_sentences: bool = True,
+                            remove_stopwords: bool = False, remove_punctuation: bool = False) \
         -> dict[str, bool]:
-    """
-    Helper function that creates a dictionary that can be given as **kwargs argument to preprocessing, idf and other functions.
+    """ Helper function that creates a dictionary that can be given as **kwargs argument to preprocessing, idf and other functions.
     Contains all the possible settings for preprocessing.
     Can be used as follows: kwargs=make_preprocessing_dict(); preprocess(text, **kwargs)
 
     Args:
-        remove_hyphens: if true, removes hyphens of the form '-[A-Z]' (often found in Simple German) from the text
-        lowercase: lowercases the article
-        remove_gender: removes German gendering endings like *in or *innen
-        lemmatization: lemmatizes the text
-        spacy_sentences: removes the paragraphs from the text and thereby forces spacy to determine sentence borders
-        remove_stopwords: removes stopwords for German as defined internally by spacy
-        remove_punctuation: Removes punctuation marks
+        remove_hyphens (bool, optional): if true, removes hyphens of the form '-[A-Z]' (often found in Simple German) from the text
+        lowercase (bool, optional): lowercases the article
+        remove_gender (bool, optional): removes German gendering endings like *in or *innen
+        lemmatization (bool, optional): lemmatizes the text
+        spacy_sentences (bool, optional): removes the paragraphs from the text and thereby forces spacy to determine sentence borders
+        remove_stopwords (bool, optional): removes stopwords for German as defined internally by spacy
+        remove_punctuation (bool, optional): Removes punctuation marks
 
     Returns:
-        Dictionary with the settings
+        dict[str, bool]: Dictionary with the settings
     """
     return {'remove_hyphens': remove_hyphens, 'lowercase': lowercase, 'remove_gender': remove_gender,
             'lemmatization': lemmatization, 'spacy_sentences': spacy_sentences,
@@ -504,23 +507,66 @@ def make_preprocessing_dict(remove_hyphens=True, lowercase=True, remove_gender=T
 
 
 def get_hash(string: str) -> int:
+    """ Calculates hash value for string
+
+    Args:
+        string (str): string to be hashed
+
+    Raises:
+        TypeError: if not string
+
+    Returns:
+        int: hash value
+    """
     if not isinstance(string, str):
         raise TypeError(f"Expected string, but got {type(string)}")
     return int(hashlib.sha1(string.encode("utf-8")).hexdigest(), 16)
 
 
 def get_file_name_hash(simple_path: str, normal_path: str) -> int:
+    """ Get the hash for the filename
+    Combines both simple and normal filename to a hashed one
+
+    Args:
+        simple_path (str): simple file
+        normal_path (str): normal file
+
+    Returns:
+        int: hash of both names combined
+    """
     # make hash from file name only, thus agnostic to folder structure
     string = Path(simple_path).name + "___" + Path(normal_path).name
     return get_hash(string)
 
 
 def make_matching_path(simple_path: str, normal_path: str, sim_measure: str, matching: str, sd_threshold: float) -> str:
+    """ Returns the path to the corresponding matching distance file
+
+    Args:
+        simple_path (str): path to simple file
+        normal_path (str): path to normal file
+        sim_measure (str): similarity measure to be used
+        matching (str): matching variant to be used
+        sd_threshold (float): standard deviation threshold to be used (see paper)
+
+    Returns:
+        str: path to matching distance file
+    """
     hash = get_file_name_hash(simple_path, normal_path)
     return f"results/matched/{hash}--{sim_measure}--{matching}--{str(sd_threshold)}.matches"
 
 
 def make_hand_aligned_path(simple_path: str, normal_path: str, short: str = None) -> str:
+    """ Returns the path to the file aligned by hand
+
+    Args:
+        simple_path (str): path to simple file
+        normal_path (str): path to normal file
+        short (str, optional): To allow for alternative filenames. Defaults to None. # TODO
+
+    Returns:
+        str: path to file aligned by hand
+    """
     hash = get_file_name_hash(simple_path, normal_path)
     if short:
         simple = f"results/hand_aligned/{short}-{hash}.simple"
@@ -532,17 +578,29 @@ def make_hand_aligned_path(simple_path: str, normal_path: str, short: str = None
 
 
 def make_alignment_path(simple_path: str, normal_path: str) -> tuple[str, str]:
+    """ Returns the path to automatically aligned file
+
+    Args:
+        simple_path (str): path to simple file
+        normal_path (str): path to normal file
+
+    Returns:
+        tuple[str, str]: path to automatically aligned file
+    """
     hash = get_file_name_hash(simple_path, normal_path)
     simple = f"results/alignment/{hash}.simple"
     normal = f"results/alignment/{hash}.normal"
     return (simple, normal)
 
-def get_website_hashes(root_dir: str = dataset_location)->list:
-    """
-    Returns a list of tuples in the form of (easy_article, normal_article) in the specified directory
+
+def get_website_hashes(root_dir: str = dataset_location) -> dict[str, list[str]]:
+    """ Returns the hashes of all article pairs listed by website
 
     Args:
         root_dir: Directory in which to find the articles, potentially nested. Info needs to be given in parsed_header.json files
+
+    Returns:
+        dict[str, list[str]]: the website name is the key, value is the list of article pair hashes
     """
     website_hashes = {}
     for root, _, files in os.walk(root_dir):
@@ -566,6 +624,7 @@ def get_website_hashes(root_dir: str = dataset_location)->list:
                     if not header[fname]['easy']:
                         continue
                     for parallel_article in header[fname]['matching_files']:
-                        website_hashes[website].append(get_file_name_hash(fname+".txt", parallel_article+".txt"))
+                        website_hashes[website].append(get_file_name_hash(
+                            fname+".txt", parallel_article+".txt"))
 
     return website_hashes

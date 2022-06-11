@@ -15,22 +15,21 @@ def match_documents(matching: str, simple_doc: list[Doc], normal_doc: list[Doc],
 
 
 # TODO: Add possibility to link original sentences to preprocessed ones!
-def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
+def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix: np.ndarray, threshold: float = 0.0, sd_threshold: float = 0.0) \
         -> list[list[tuple[int, int], tuple[str, str], float]]:
-    """
-    Calculates maximum matches for each simple sentence and returns the list of matched sentences.
+    """ Calculates maximum matches for each simple sentence and returns the list of matched sentences.
     Please note that this only allows 1-to-n-matching. Taken from CATS
 
     Args:
-        simple_doc: The simple document in preprocessed format
-        normal_doc: The normal document in preprocessed format
-        match_matrix: A matrix with similarity scores for the sentences in the documents (simple_sentence x normal_sentence)
-        threshold: Minimum matching threshold, is different for different kinds of matching algorithms.
-        sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std)
+        simple_doc (list[Doc]): The simple document in preprocessed format
+        normal_doc (list[Doc]): The normal document in preprocessed format
+        match_matrix (np.ndarray): A matrix with similarity scores for the sentences in the documents (simple_sentence x normal_sentence)
+        threshold (float, optional): Minimum matching threshold, is different for different kinds of matching algorithms.
+        sd_threshold (float, optional): Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std)
 
     Returns:
-        A list of matched sentences with their indices and their similarity value
-        Form: ((i,j), (simple_i, normal_j), distance)
+        list[list[tuple[int, int], tuple[str, str], float]]: A list of matched sentences with their indices and their similarity value
+            Form: ((i,j), (simple_i, normal_j), distance)
     """
 
     if sd_threshold > 0.0:
@@ -41,11 +40,11 @@ def match_documents_max(simple_doc: list[Doc], normal_doc: list[Doc], match_matr
     max_values = np.argmax(match_matrix, axis=1)
 
     # converting to int makes them serializable
-    return [[(int(i), int(j)), (str(simple_doc[i]), str(normal_doc[j])), match_matrix[i,j]] for i, j in enumerate(max_values) if
+    return [[(int(i), int(j)), (str(simple_doc[i]), str(normal_doc[j])), match_matrix[i, j]] for i, j in enumerate(max_values) if
             match_matrix[i, j] > threshold]
 
 
-def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix, threshold=0.0, sd_threshold=0.0) \
+def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc: list[Doc], match_matrix: np.ndarray, threshold: float = 0.0, sd_threshold: float = 0.0) \
         -> list[list[tuple[int, int], tuple[str, str], float]]:
     """
     Calculates maximum matches for each simple sentence, then returns the longest increasing subsequence
@@ -53,17 +52,18 @@ def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc
     Please note that this only allows 1-to-n-matching. Taken from CATS
 
     Args:
-        simple_doc: The simple document in preprocessed format
-        normal_doc: The normal document in preprocessed format
-        match_matrix: A matrix with similarity scores for the sentences in the documents
-        threshold: Minimum matching threshold, is different for different kinds of matching algorithms.
-        sd_threshold: Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std). If > 0, overwrites threshold
+        simple_doc (list[Doc]): The simple document in preprocessed format
+        normal_doc (list[Doc]): The normal document in preprocessed format
+        match_matrix (np.ndarray): A matrix with similarity scores for the sentences in the documents
+        threshold (float, optional): Minimum matching threshold, is different for different kinds of matching algorithms.
+        sd_threshold (float, optional): Calculates the mean and standard deviation of all sentence similarities and sets the threshold to mean+(sd_threshold*std). If > 0, overwrites threshold
 
     Returns:
-        A list of matched sentences with their indices and their similarity value
-        Form: ((i,j), (simple_i, normal_j), distance)
+        list[list[tuple[int, int], tuple[str, str], float]]: A list of matched sentences with their indices and their similarity value
+            Form: ((i,j), (simple_i, normal_j), distance)
     """
 
+    # Overwrite threshold, when sd_threshold is given
     if sd_threshold > 0.0:
         std = np.std(match_matrix)
         mean = np.mean(match_matrix)
@@ -111,20 +111,19 @@ def match_documents_max_increasing_subsequence(simple_doc: list[Doc], normal_doc
                 start_border += max_val_ind
 
     # converting i and j to int makes them json serializable
-    return [[(int(i), int(j)), (str(simple_doc[i]), str(normal_doc[j])), match_matrix[i,j]] for i, j in final_matching if
+    return [[(int(i), int(j)), (str(simple_doc[i]), str(normal_doc[j])), match_matrix[i, j]] for i, j in final_matching if
             match_matrix[i, j] > threshold]
 
 
 def get_longest_increasing_subsequence(simple_matchings: list[tuple[tuple[str, str], tuple[str, str], float]]) \
         -> tuple[list[str], list[str]]:
-    """
-    Calculates the longest increasing subsequence within a given matching
+    """ Calculates the longest increasing subsequence within a given matching
 
     Args:
-        simple_matching: list containing matching information of the form
+        simple_matching (list[tuple[tuple[str, str], tuple[str, str], float]]): list containing matching information of the form
             ((simple_index, normal_index), (simple_sentence, normal_sentence), distance)
     Returns:
-        list of index matching tuples giving the longest increasing subsequence
+        tuple[list[str], list[str]]: list of index matching tuples giving the longest increasing subsequence
     """
     simple_indices = [match[0][0] for match in simple_matchings]
     normal_indices = [match[0][1] for match in simple_matchings]
@@ -159,22 +158,21 @@ def get_longest_increasing_subsequence(simple_matchings: list[tuple[tuple[str, s
     return simple_ind_subseq, subseq
 
 
-def calculate_similarity_matrix(simple_doc: list[Doc], normal_doc: list[Doc], similarity_measure: str, n=4,
-                                tf1: dict[str, float] = None, tf2: dict[str, float] = None, idf: dict[str, float] = None):
-    """
-    Calculates the matrix of similarity scores for each sentence pairing
+def calculate_similarity_matrix(simple_doc: list[Doc], normal_doc: list[Doc], similarity_measure: str, n:int=4,
+                                tf1: dict[str, float] = None, tf2: dict[str, float] = None, idf: dict[str, float] = None) -> np.ndarray:
+    """ Calculates the matrix of similarity scores for each sentence pairing
 
     Args:
-        simple_doc: A preprocessed document in simple German
-        normal_doc: A preprocessed document in normal German
-        similarity_measure: A similarity measure from the list of possible similarity measures, can be n_gram, bag_of_words, cosine, average, maximum, max_matching, and CWASA
-        n: needed for n-grams
-        tf1: Needed for tfidf similarity measures
-        tf2: Needed for tfidf similarity measures
-        idf: Needed for tfidf similarity measures
+        simple_doc (list[Doc]): A preprocessed document in simple German
+        normal_doc (list[Doc]): A preprocessed document in normal German
+        similarity_measure (str): A similarity measure from the list of possible similarity measures, can be n_gram, bag_of_words, cosine, average, maximum, max_matching, and CWASA
+        n (int, optional): needed for n-grams
+        tf1 (dict[str, float], optional): Needed for tfidf similarity measures
+        tf2 (dict[str, float], optional): Needed for tfidf similarity measures
+        idf (dict[str, float], optional): Needed for tfidf similarity measures
 
     Returns:
-        A len(doc1), len(doc2)-Matrix with similarity scores for both documents
+        np.ndarray: A len(doc1), len(doc2)-Matrix with similarity scores for both documents
     """
     match_matrix = np.zeros(shape=(len(simple_doc), len(normal_doc)))
 
