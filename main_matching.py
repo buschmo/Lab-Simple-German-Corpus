@@ -9,7 +9,7 @@ from multiprocessing import Pool
 from typing import Iterator
 
 
-def article_generator_parallel(matched_article_list: list[tuple[str, str]]) -> Iterator[list[str, str, str, str]]:
+def article_generator_parallel(matched_article_list: list[tuple[str, str]]) -> Iterator[tuple[str, str, str, str]]:
     """ Generator function that iteratively returns preprocessed articles.
 
     Args:
