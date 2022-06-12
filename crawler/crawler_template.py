@@ -1,12 +1,14 @@
 import crawler.utilities as utl
 
+# base_url is used for creating the main folder and as a start point for crawling
+base_url = "homepage"
 
 def crawl_site(easy_url: str, base_url: str):
     """ Saves the parallel articles
 
     Args:
-        easy_url: the easy article to find the normal article in
-        base_url: the base hostname of the website
+        easy_url (str): the easy article to find the normal article in
+        base_url (str): the base hostname of the website
     """
     easy_soup = utl.read_soup(easy_url)
 
@@ -23,12 +25,15 @@ def crawling(base_url: str):
     """ Starts the crawling process
 
     Args:
-        base_url: the base hostname of the website
+        base_url (str): the base hostname of the website
     """
     home_url_easy = ""
 
-    # get urls from easy main page
     easy_soup = utl.read_soup(home_url_easy)
+
+    # Suggested steps:
+    #   get urls from easy main page
+    #   use crawl_site to traverse the found urls and make recursive calls
 
     # read the corresponding articles
     for i, easy_url in enumerate(easy_urls):
@@ -38,18 +43,18 @@ def crawling(base_url: str):
 
 def parser(soup: BeautifulSoup) -> BeautifulSoup:
     """ Parse the texts from the previously downloaded articles
+    Given a soup, parse the contents into a result soup.
+    Most of the time 
 
     Args:
-        soup: BeautifulSoup object of the webpage to be parsed
+        soup (BeautifulSoup): BeautifulSoup object of the webpage to be parsed
 
     Returns:
-        BeautifulSoup object containing the the text to be extracted (See utl.parse_soups() for context)
+        BeautifulSoup: BeautifulSoup object containing the the text to be extracted (See utl.parse_soups() for context)
     """
 
-    result = BeautifulSoup("", "html.parser")
-    # # add all contents to result
-    # for tag in content:
-    #     if "──────────────────" in tag.get_text():
-    #         continue
-    #     result.append(tag)
+    content = soup
+
+    # add functionality to parse draw useable content from the soup
+    results = BeautifulSoup(content, "html.parser")
     return result

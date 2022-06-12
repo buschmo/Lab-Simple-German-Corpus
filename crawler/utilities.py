@@ -22,7 +22,18 @@ LAST_SCRAPE = None
 from_archive = False
 
 
-def read_soup(url: str):
+def read_soup(url: str) ->BeautifulSoup:
+    """ Read soup given by url
+    Reads the file of the soup and returns it.
+    Downloads the soup if necessary.
+    Beware that get_soup_from_url does not handle request denials of the website!
+
+    Args:
+        url (str): url to be read
+
+    Returns:
+        BeautifulSoup: the requested soup
+    """    
     filepath = get_crawled_path_from_url(url)
 
     if os.path.exists(filepath):
@@ -34,7 +45,17 @@ def read_soup(url: str):
     return soup
 
 
-def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, publication_date=None):
+def save_parallel_soup(normal_soup:BeautifulSoup, normal_url: str, easy_soup:BeautifulSoup, easy_url: str, publication_date:str=None):
+    """ Save parallel normal and easy webpage
+    Given parallel BeautifulSoups, this methods saves both and setups the needed header file information.
+
+    Args:
+        normal_soup (BeautifulSoup): normal soup
+        normal_url (str): url of the normal soup
+        easy_soup (BeautifulSoup): easy soup
+        easy_url (str): url of the easy soup
+        publication_date (str, optional): String of the webpage's date of publication. Defaults to None.
+    """    
     normal_filepath = get_crawled_path_from_url(normal_url)
     easy_filepath = get_crawled_path_from_url(easy_url)
 
@@ -47,18 +68,31 @@ def save_parallel_soup(normal_soup, normal_url: str, easy_soup, easy_url: str, p
                 normal_filepath, True, publication_date)
 
 
-def save_soup(soup, filepath: Path):
+def save_soup(soup:BeautifulSoup, filepath: Path):
+    """ Saves a given soup under given path
+
+    Args:
+        soup (BeautifulSoup): soup to be saved
+        filepath (Path): Path where to save
+    """    
     if not os.path.exists(filepath.parent):
         os.makedirs(filepath.parent)
 
     if not os.path.exists(filepath):
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(soup.prettify())
-    # else:
-    #     log_resaving_file(filepath)
 
 
 def load_header(url: str) -> dict:
+    """ Loads and returns the header file for a given webpage.
+    The header is determined by the base url of the webpage.
+
+    Args:
+        url (str): url for which the header is to be loaded
+
+    Returns:
+        dict: header's content
+    """    
     headerpath = get_headerpath_from_url(url)
     # save header information
     if os.path.exists(headerpath):
@@ -69,7 +103,16 @@ def load_header(url: str) -> dict:
     return header
 
 
-def save_header(filepath, url: str, matching_filepath: Path, bool_easy: bool = False, publication_date=None):
+def save_header(filepath : Path, url: str, matching_filepath: Path, bool_easy: bool = False, publication_date:str=None):
+    """ Saves the given information to the header file determined by url
+
+    Args:
+        filepath (Path): Path to file. Filename is used as key in header
+        url (str): Url, that determines the header file. The full url is saved in header
+        matching_filepath (Path): Path to parallel file, i.e. simple file for a given normal one and vice versa
+        bool_easy (bool, optional): Indicates if given file has easy german content or not. Defaults to False.
+        publication_date (str, optional): The webpage's date of publication. Defaults to None.
+    """    
     key = filepath.name
     headerpath = get_headerpath_from_url(url)
 
@@ -99,45 +142,57 @@ def save_header(filepath, url: str, matching_filepath: Path, bool_easy: bool = F
         json.dump(header, f, indent=4)
 
 
-def remove_header_entry(url: str, main_key: str):
+def remove_header_entry(url: str, key: str):
     """ Removes an entry and deletes all corresponding files.
-    """
+
+    Args:
+        url (str): url to determine header file
+        key (str): key to be removed from header
+    """    
     header = load_header(url)
     # already deleted
-    if not main_key in header.keys():
+    if not key in header.keys():
         return
 
     # delete crawled file
-    crawled_path = get_crawled_path_from_url(header[main_key]["url"])
+    crawled_path = get_crawled_path_from_url(header[key]["url"])
     if os.path.exists(crawled_path):
         os.remove(crawled_path)
     # delete parsed file
-    parsed_path = get_parsed_path_from_url(header[main_key]["url"])
+    parsed_path = get_parsed_path_from_url(header[key]["url"])
     if os.path.exists(parsed_path):
         os.remove(parsed_path)
 
-    matching_files = header[main_key]["matching_files"]
-    for key in matching_files:
-        header[key]["matching_files"].remove(main_key)
+    matching_files = header[key]["matching_files"]
+    for k in matching_files:
+        header[k]["matching_files"].remove(key)
         # remove files with no matching files
-        if not header[key]["matching_files"]:
+        if not header[k]["matching_files"]:
             # delete crawled file
-            crawled_path = get_crawled_path_from_url(header[key]["url"])
+            crawled_path = get_crawled_path_from_url(header[k]["url"])
             if os.path.exists(crawled_path):
                 os.remove(crawled_path)
             # delete parsed file
-            parsed_path = get_parsed_path_from_url(header[key]["url"])
+            parsed_path = get_parsed_path_from_url(header[k]["url"])
             if os.path.exists(parsed_path):
                 os.remove(parsed_path)
-            del header[key]
+            del header[k]
 
-    del header[main_key]
+    del header[key]
     headerpath = get_headerpath_from_url(url)
     with open(headerpath, "w", encoding="utf-8") as f:
         json.dump(header, f, indent=4)
 
 
-def get_names_from_url(url: str) -> [str, str]:
+def get_names_from_url(url: str) -> tuple[str, str]:
+    """ Converts an url to the corresponding foldername and filename.
+
+    Args:
+        url (str): url to be converted
+
+    Returns:
+        tuple[str, str]: the foldername and filename of the url's file
+    """    
     if from_archive:
         if "//web.archive.org/web/" in url:
             url = re.sub("\w+://web.archive.org/web/\d+/", "", url)
@@ -159,31 +214,75 @@ def get_names_from_url(url: str) -> [str, str]:
 
 
 def get_headerpath_from_url(url: str, parsed: bool = False) -> Path:
+    """ Returns the corresponding header's path of a given url
+
+    Args:
+        url (str): url indicating the header
+        parsed (bool, optional): whether to return the path to parsed_header.json or header.json. Defaults to False.
+
+    Returns:
+        Path: path to the respective header file
+    """    
     foldername, _ = get_names_from_url(url)
     if parsed:
         return Path("Datasets", foldername, "parsed_header.json")
     elif from_archive:
+        # from_archive indicated if archive_header.json is to be used.
+        # This option is only needed for the publication of the paper
         return Path("Datasets", foldername, "archive_header.json")
     else:
         return Path("Datasets", foldername, "header.json")
 
 
-def get_log_path_from_url(url: str):
+def get_log_path_from_url(url: str)->Path:
+    """ Path to the log file
+
+    Args:
+        url (str): url for path finding
+
+    Returns:
+        Path: path to log.txt
+    """    
     foldername, _ = get_names_from_url(url)
     return Path("Datasets", foldername, "log.txt")
 
 
 def get_parsed_path_from_url(url: str) -> Path:
+    """ Returns path to the url's parsed file
+
+    Args:
+        url (str): url to determine file
+
+    Returns:
+        Path: Path to parsed file
+    """    
     foldername, filename = get_names_from_url(url)
     return Path("Datasets", foldername, "parsed", filename + ".txt")
 
 
 def get_crawled_path_from_url(url: str) -> Path:
+    """ Returns path to the url's crawled file
+
+    Args:
+        url (str): url to determine file
+
+    Returns:
+        Path: Path to crawled file
+    """    
     foldername, filename = get_names_from_url(url)
     return Path("Datasets", foldername, "crawled", filename)
 
 
-def get_soup_from_url(url: str):
+def get_soup_from_url(url: str) -> BeautifulSoup:
+    """ Downloads the BeautifulSoup from url
+    Beware that this does not handle request denials of the website
+
+    Args:
+        url (str): url to be downloaded
+
+    Returns:
+        BeautifulSoup: downloaded BeautifulSoup
+    """    
     global LAST_SCRAPE
     if LAST_SCRAPE is not None:
         time_since_last = datetime.now() - LAST_SCRAPE
@@ -199,7 +298,7 @@ def get_soup_from_url(url: str):
     return BeautifulSoup(response.text, 'html.parser')
 
 
-# TODO this function should be removed as its usage is unnecessary
+# TODO this function should be removed as its usage is unnecessary. Some crawlers need to be rewritten
 def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_filter_args: dict = {}) -> list[str]:
     if filter_args:
         blocks = soup.find_all(**filter_args)
@@ -222,17 +321,35 @@ def get_urls_from_soup(soup, base_url: str, filter_args: dict = {}, recursive_fi
     return urls
 
 
-def parse_url(url, base_url):
+def parse_url(url:str, base_url:str) -> str:
+    """ Adds the base_url to url
+    Some webpages only yield /some_page as url instead of base_url.domain/some_page
+
+    Args:
+        url (str): some url
+        base_url (str): base url to be added to url if necessary
+
+    Returns:
+        str: new url
+    """    
     if base_url not in url:
         url = urllib.parse.urljoin(base_url, url)
     return url
 
 
-def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
+def parse_soups(base_url :str, parser: Callable[[BeautifulSoup], BeautifulSoup]):
+    """ Traverses all downloaded files for a given url and parses the content.
+
+    Args:
+        base_url (str): url indicating the header file
+        parser (Callable[[BeautifulSoup], BeautifulSoup]): the specific parser for the website. This probably needs to be unique for every website
+    """    
     header = load_header(base_url)
     parsed_header_path = get_headerpath_from_url(base_url, parsed=True)
     parsed_header = {}
-    l_remove = []
+    l_remove = [] # saves webpages that generated no content after parsing
+
+    # parse every file
     for filename in header.keys():
         url = header[filename]["url"]
         path = get_parsed_path_from_url(url)
@@ -290,9 +407,16 @@ def parse_soups(base_url, parser: Callable[[BeautifulSoup], BeautifulSoup]):
         json.dump(parsed_header, fp, indent=4)
 
 
-def filter_urls(urls: list, base_url: str) -> list:
-    """ Removes urls that have already been crawled
-    """
+def filter_urls(urls: list[str], base_url: str) -> list[str]:
+    """ Removes urls that have already been downloaded
+
+    Args:
+        urls (list[str]): list of urls to be filtered
+        base_url (str): base url of the website
+
+    Returns:
+        list[str]: filtered list of urls
+    """    
     file_path = get_crawled_path_from_url(urls[0])
     header_path = get_headerpath_from_url(urls[0])
 
@@ -309,6 +433,8 @@ def filter_urls(urls: list, base_url: str) -> list:
 
 
 ### LOGGING UTILITIES ###
+### These can savely be ignored ###
+### Pythons logging utilities should be used instead ###
 
 def log_missing_url(url: str):
     if not already_logged(url):
@@ -348,7 +474,7 @@ def log_resaving_file(filepath: Path):
 
 def already_logged(url: str) -> bool:
     path = get_headerpath_from_url(url)
-    if os.path.exists(path):
+    if os.path.exists(path):_description_
         with open(path, "r") as f:
             content = f.read()
             return bool(url in content)
