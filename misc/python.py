@@ -1,4 +1,5 @@
 import os
+import json
 import matching.utilities as utl
 import pickle as pkl
 import re
@@ -15,6 +16,7 @@ def prep_text(text):
 
 def split_lines():
     """ By a mistake in hand_align all lines were saved without a trailing \n
+    This function fixes that
     """
     out = "results/new/"
     if not os.path.isdir(out):
@@ -179,6 +181,59 @@ def compare(pairs):
     print("\t", c)
 
 
+
+def statistics():
+    pairs = 0
+    normal_sentences = 0
+    for path, dirs, files in os.walk("results/evaluated/"):
+        for file in files:
+            with open(path+file) as fp:
+                data = json.load(fp)
+                for k,v in data.items():
+                    if k!="finished":
+                        normal_sentences += 1
+                        pairs += len(v)
+    print(f"Evaluated pairs: {pairs}\nEvaluated normal sentences: {normal_sentences}")
+
+    easy_sentences = 0
+    normal_sentences = 0
+    for path, dirs, files in os.walk("Datasets/"):
+        if "parsed_header.json" in files:
+            with open(path+"/parsed_header.json") as fp:
+                header = json.load(fp)
+            for k,v in header.items():
+                if v["easy"]:
+                    with open(path+"/parsed/"+k+".txt") as fp:
+                        easy_sentences += len(fp.readlines())
+                else:
+                    with open(path+"/parsed/"+k+".txt") as fp:
+                        normal_sentences += len(fp.readlines())
+
+    print(f"Parsed easy sentences: {easy_sentences}\nParsed normal sentences: {normal_sentences}")
+
+    pairs = utl.get_article_pairs()
+    similarity_measures = ["n_gram", "bag_of_words",
+                            "cosine", "average", "maximum", "max_matching", "CWASA"]
+
+    sd_thresholds = [0.0, 1.5]
+
+    doc_matchings = ["max", "max_increasing_subsequence"]
+
+    paths = []
+    for sim_measure in similarity_measures:
+        for sd_threshold in sd_thresholds:
+            for matching in doc_matchings:
+                for simple_file, normal_file in pairs:
+                    if "apotheke" in simple_file:
+                        print(simple_file)
+                    path = utl.make_matching_path(
+                        simple_file, normal_file, sim_measure, matching, sd_threshold)
+                    paths.append(path)
+
+    matched = os.listdir("results/matched")
+    print(f"{len(paths)} vs {len(matched)}")
+
+
 def main():
     temp = utl.get_article_pairs()
     all_pairs = []
@@ -198,8 +253,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    # rename_hashes_and_files()
-    # main()
-
-    split_lines()
+    pass
