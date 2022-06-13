@@ -8,11 +8,14 @@ from matching.defaultvalues import *
 import spacy
 
 nlp = spacy.load("de_core_news_lg")
+
+
 def prep_text(text):
     text = text.replace('\n', ' ')
     text = re.sub('\s+', ' ', text)
     sents = [str(sent) for sent in nlp(text).sents]
     return sents
+
 
 def split_lines():
     """ By a mistake in hand_align all lines were saved without a trailing \n
@@ -21,7 +24,7 @@ def split_lines():
     out = "results/new/"
     if not os.path.isdir(out):
         os.makedirs(out)
-    
+
     with open("results/website_samples.pkl", "rb") as fp:
         pairs = pkl.load(fp)
 
@@ -29,7 +32,7 @@ def split_lines():
         with open(Path(dataset_location, pair[0])) as fp_simple, open(Path(dataset_location, pair[1])) as fp_normal:
             # print(pair)
             # print(*pair)
-            p_s,p_n = utl.make_hand_aligned_path(*pair)
+            p_s, p_n = utl.make_hand_aligned_path(*pair)
             with open(p_s) as fp_ressim, open(p_n) as fp_resnor:
                 simple_lines = prep_text(fp_simple.read())
                 normal_lines = prep_text(fp_normal.read())
@@ -49,11 +52,11 @@ def split_lines():
                         short = []
                         for simple in simple_lines:
                             if align_simple.startswith(simple):
-                                if len(simple)<3:
+                                if len(simple) < 3:
                                     short.append(simple)
                                     continue
                                 match = True
-                                align_pairs.append([normal,simple])
+                                align_pairs.append([normal, simple])
                                 # print(f"Removing #{simple}# from\n\t{align_simple}")
                                 align_normal = align_normal[len(normal):]
                                 align_simple = align_simple[len(simple):]
@@ -62,7 +65,7 @@ def split_lines():
                             for simple in short:
                                 # print(f"\t\tshort list: {short}")
                                 match = True
-                                align_pairs.append([normal,simple])
+                                align_pairs.append([normal, simple])
                                 # print(f"Stemming from {simple_lines}")
                                 # print(f"Removing #{simple}# from\n\t #{align_simple}")
                                 align_normal = align_normal[len(normal):]
@@ -75,14 +78,14 @@ def split_lines():
                             print("@@@@@")
                             print(f"{align_simple}")
                             return
-                        
+
         h = utl.get_file_name_hash(*pair)
         # print(h)
         with open(f"{out}/{h}.normal", "w") as write_normal, open(f"{out}/{h}.simple", "w") as write_simple:
             for align_pair in align_pairs:
                 write_normal.write(align_pair[0]+"\n")
                 write_simple.write(align_pair[1]+"\n")
-        
+
     # with open("out.md", "w") as fp_out:
         # for path, _, files in os.walk("results/hand_aligned"):
         #     for file in files:
@@ -133,7 +136,7 @@ def rename_hashes_and_files():
                     p[i] += ".txt"
                 p[i] = re.sub("parsed/www.", "parsed/", p[i])
             old_hash = utl.get_file_name_hash(p[0], p[1])
-            for i in [0,1]:
+            for i in [0, 1]:
                 p[i] = re.sub("__.html.txt", ".html.txt", p[i])
             if p[1] == "www.stadt-koeln.de/parsed/stadt-koeln.de__service__produkt__anmeldung-eines-hundes.html.txt":
                 p[1] = "www.stadt-koeln.de/parsed/stadt-koeln.de__service__produkt__anmeldung-eines-hundes-1.html.txt"
@@ -154,6 +157,10 @@ def rename_hashes_and_files():
 def get_old_hash(easy, normal):
     string = easy + "___" + normal
     return utl.get_hash(string)
+
+
+def get_old_name(easy, normal):
+    return f"{easy[-20:]}___{normal[-20:]}"
 
 
 def compare(pairs):
@@ -181,7 +188,6 @@ def compare(pairs):
     print("\t", c)
 
 
-
 def statistics():
     pairs = 0
     normal_sentences = 0
@@ -189,11 +195,12 @@ def statistics():
         for file in files:
             with open(path+file) as fp:
                 data = json.load(fp)
-                for k,v in data.items():
-                    if k!="finished":
+                for k, v in data.items():
+                    if k != "finished":
                         normal_sentences += 1
                         pairs += len(v)
-    print(f"Evaluated pairs: {pairs}\nEvaluated normal sentences: {normal_sentences}")
+    print(
+        f"Evaluated pairs: {pairs}\nEvaluated normal sentences: {normal_sentences}")
 
     easy_sentences = 0
     normal_sentences = 0
@@ -201,7 +208,7 @@ def statistics():
         if "parsed_header.json" in files:
             with open(path+"/parsed_header.json") as fp:
                 header = json.load(fp)
-            for k,v in header.items():
+            for k, v in header.items():
                 if v["easy"]:
                     with open(path+"/parsed/"+k+".txt") as fp:
                         easy_sentences += len(fp.readlines())
@@ -209,11 +216,12 @@ def statistics():
                     with open(path+"/parsed/"+k+".txt") as fp:
                         normal_sentences += len(fp.readlines())
 
-    print(f"Parsed easy sentences: {easy_sentences}\nParsed normal sentences: {normal_sentences}")
+    print(
+        f"Parsed easy sentences: {easy_sentences}\nParsed normal sentences: {normal_sentences}")
 
     pairs = utl.get_article_pairs()
     similarity_measures = ["n_gram", "bag_of_words",
-                            "cosine", "average", "maximum", "max_matching", "CWASA"]
+                           "cosine", "average", "maximum", "max_matching", "CWASA"]
 
     sd_thresholds = [0.0, 1.5]
 
@@ -234,7 +242,7 @@ def statistics():
     print(f"{len(paths)} vs {len(matched)}")
 
 
-def main():
+def compare_hashes():
     temp = utl.get_article_pairs()
     all_pairs = []
     for p in temp:
@@ -250,6 +258,51 @@ def main():
         pairs = [tuple(p) for p in pairs]
     print("Sample")
     compare(pairs)
+
+
+def rename_old_results():
+    pairs = utl.get_article_pairs()
+    hash_pairs = {(s.split("/")[-1],n.split("/")[-1]):utl.get_file_name_hash(s,n) for s,n in pairs}
+    all_list = [get_old_name(easy, normal) +
+                ".results" for easy, normal in pairs]
+    all_set = set(all_list)
+    dir_list = os.listdir("results/evaluated")
+    if "1234654218863846309050772957188108835422355600671.results" in dir_list:
+        dir_list.remove("1234654218863846309050772957188108835422355600671.results")
+    if "1178337156844710522646525482484095458050847051918.results" in dir_list:
+        dir_list.remove("1178337156844710522646525482484095458050847051918.results")
+    if "-reden_easy.html.txt___eden_normal.html.txt.results" in dir_list:
+        dir_list.remove("-reden_easy.html.txt___eden_normal.html.txt.results")
+    if "gesetz-node.html.txt___gesetz-node.html.txt.results" in dir_list:
+        dir_list.remove("gesetz-node.html.txt___gesetz-node.html.txt.results")
+
+    rename = []
+    rename.append(("-reden_easy.html.txt___eden_normal.html.txt.results","1178337156844710522646525482484095458050847051918.results"))
+    rename.append(("gesetz-node.html.txt___gesetz-node.html.txt.results","1234654218863846309050772957188108835422355600671.results"))
+    c = 0
+    for s,n in hash_pairs:
+        if "5621822" in s and "5613660" in n:
+            rename.append(("e__!5621822.html.txt____!5613660__.html.txt.results", str(hash_pairs[(s,n)])+".results"))
+            continue
+        if "5617312" in s and "5613086" in n:
+            rename.append(("e__!5617312.html.txt____!5613086__.html.txt.results", str(hash_pairs[(s,n)])+".results"))
+            continue
+        if "5621822" in s and "5616434" in n:
+            rename.append(("e__!5621822.html.txt____!5616434__.html.txt.results", str(hash_pairs[(s,n)])+".results"))
+            continue
+        if "5634433" in s and "5619787" in n:
+            rename.append(("e__!5634433.html.txt____!5619787__.html.txt.results", str(hash_pairs[(s,n)])+".results"))
+            continue
+        if "5621822" in s and "5617309" in n:
+            rename.append(("e__!5621822.html.txt____!5617309__.html.txt.results", str(hash_pairs[(s,n)])+".results"))
+            continue
+        name = get_old_name(s, n)+".results"
+        if name in dir_list:
+            c+=1
+            rename.append((name, hash_pairs[(s,n)]))
+
+    for o,n in rename:
+        os.rename(f"results/evaluated/{o}", f"results/evaluated/{n}")
 
 
 if __name__ == "__main__":
