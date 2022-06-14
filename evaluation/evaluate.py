@@ -68,7 +68,6 @@ for root, dirs, files in os.walk("results/matched"):
 
 def get_matches():
     user = os.environ.get("USERNAME")
-    all_files = sorted(list(file_matchings), reverse=(user == "malte"))
     for comb in all_files:
         matches = set()
         for file in filtered_files:
