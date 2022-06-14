@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 
 
 import matching.utilities as utl
-# from matching.defaultvalues import *
+# from defaultvalues import *
 # from align_by_hand import prep_text
 
 with open(website_sample_location, "rb") as f:

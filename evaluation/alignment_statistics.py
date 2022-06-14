@@ -2,7 +2,7 @@ import os
 import re
 import spacy
 import matching.utilities as utl
-from matching.defaultvalues import *
+from defaultvalues import *
 import json
 
 nlp = spacy.load("de_core_news_lg")

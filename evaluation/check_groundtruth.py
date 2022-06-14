@@ -4,7 +4,7 @@ import pickle
 import random
 
 from collections import Counter
-from matching.defaultvalues import dataset_location
+from defaultvalues import dataset_location
 
 data_samples = "results/website_sample.pkl"
 apo_header = os.path.join(dataset_location, "www.apotheken-umschau.de/header.json")

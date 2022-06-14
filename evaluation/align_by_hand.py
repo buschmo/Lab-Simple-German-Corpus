@@ -12,7 +12,7 @@ import platform
 from pathlib import Path
 
 import matching.utilities as utl
-from matching.defaultvalues import *
+from defaultvalues import *
 
 SHORT = "vt"  # None
 

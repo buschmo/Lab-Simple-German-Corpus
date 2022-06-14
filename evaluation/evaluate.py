@@ -2,7 +2,7 @@ import os
 import json
 from tkinter import *
 from tkinter.simpledialog import askinteger
-from matching.defaultvalues import *
+from defaultvalues import *
 
 file_matchings = set()
 

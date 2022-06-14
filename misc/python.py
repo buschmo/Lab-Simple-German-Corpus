@@ -4,7 +4,7 @@ import matching.utilities as utl
 import pickle as pkl
 import re
 from pathlib import Path
-from matching.defaultvalues import *
+from defaultvalues import *
 import spacy
 
 nlp = spacy.load("de_core_news_lg")

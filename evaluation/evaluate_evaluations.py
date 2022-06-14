@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
 
-from matching.defaultvalues import dataset_location
+from defaultvalues import dataset_location
 
 
 def get_matches(files, name=None):

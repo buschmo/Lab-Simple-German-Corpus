@@ -10,7 +10,7 @@ from random import shuffle
 
 import matching.utilities as utl
 from align_by_hand import prep_text
-from matching.defaultvalues import *
+from defaultvalues import *
 
 nlp = spacy.load("de_core_news_lg")
 
