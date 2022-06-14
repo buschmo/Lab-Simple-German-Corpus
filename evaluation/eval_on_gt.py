@@ -11,11 +11,7 @@ import matching.utilities as utl
 # from matching.defaultvalues import *
 # from align_by_hand import prep_text
 
-path_to_samples = "/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/Änderungen/website_samples.pkl"
-path_to_gt = "/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/Änderungen/" # "results/hand_aligned"
-path_to_matchings = "/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/results/matched"
-
-with open(path_to_samples, "rb") as f:
+with open(website_sample_location, "rb") as f:
     samples = pickle.load(f)
 
 sim_measures = ["average", "bag_of_words", "cosine", "CWASA", "max_matching", "maximum", "n_gram"]
@@ -38,10 +34,10 @@ def create_gt_dict(simple_path, normal_path) -> dict:
         Dictionary à la {simple_German_sentence: corresponding_German_sentence}
     """
     hash_easy_path, hash_normal_path = utl.make_hand_aligned_path(simple_path, normal_path)
-    with open(path_to_gt+"/".join(hash_easy_path.split("/")[1:])) as f:
+    with open(ground_truth_location+"/".join(hash_easy_path.split("/")[1:])) as f:
         simple_article = f.read()
 
-    with open(path_to_gt+"/".join(hash_normal_path.split("/")[1:])) as f:
+    with open(ground_truth_location+"/".join(hash_normal_path.split("/")[1:])) as f:
         article = f.read()
 
     simple_sents = simple_article.split("\n") # prep_text(simple_article) # [str(s) for s in nlp(simple_article).sents]
@@ -80,7 +76,7 @@ def evaluate():
             name = utl.make_matching_path(simple_article_name, article_name, sim, match_m, thres)
             correct_alignments = 0
             try:
-                with open(os.path.join(path_to_matchings, os.path.split(name)[1])) as f:
+                with open(os.path.join(matching_location, os.path.split(name)[1])) as f:
                     alignments = json.load(f)
             except FileNotFoundError:
                 print(f">> FileNotFoundError: for article '{article_name}' with matching path '{name}'")

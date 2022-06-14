@@ -13,11 +13,8 @@ from align_by_hand import prep_text
 from matching.defaultvalues import *
 
 nlp = spacy.load("de_core_news_lg")
-path_to_samples = "results/website_samples.pkl"
-path_to_gt = "results/hand_aligned"
-path_to_matchings = "/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/results/matched"
 
-with open(path_to_samples, "rb") as f:
+with open(website_sample_location, "rb") as f:
     samples = pickle.load(f)
 # TODO: remove shuffle after finishing script
 random.seed(42)

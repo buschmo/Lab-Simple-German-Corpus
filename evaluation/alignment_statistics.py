@@ -30,7 +30,7 @@ for website in website_hashes:
     counter[website] = 0
     counter_tokens[website] = 0
     for hash in website_hashes[website]:
-        path = f"/Users/vtoborek/sciebo/Lab Development and Application of Data Mining and Learning Systems/results/alignment/{hash}.normal"
+        path = f"{repository_location}/results/alignment/{hash}.normal"
         if os.path.exists(path):
             with open(path) as fp:
                 lines = fp.readlines()
