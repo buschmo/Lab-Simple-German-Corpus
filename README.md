@@ -16,8 +16,10 @@ In later work, such a (potentially expanded) corpus may be used to implement aut
 Papers that we use as inspiration for our work can be found in the resources wiki.
 
 ## Using this repository
-Before using the repo, you **must** create the file `matching/defaultvalues.py`.
-Within it, define a variable `dataset_location` with the absolute path to the `Dataset` folder. E.g. `dataset=/home/bob/Simple-German-Corpus/Datasets`
+Before using the repo, you **must** create the file `defaultvalues.py`.
+Within it, you need to define the variable `repository_location`, the absolute path to the folder of this repository. E.g. `dataset=/home/bob/Simple-German-Corpus`.
+You can also change any of the other variables.
+
 Please note, that downloading is throttled by a 5 second delay to reduce network traffic.
 You can change this in `crawler/utilities.py`
 
