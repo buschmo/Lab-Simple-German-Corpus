@@ -320,6 +320,5 @@ if __name__ == "__main__":
     if not os.path.isdir("results/hand_aligned/"):
         os.makedirs("results/hand_aligned/")
     root = tk.Tk()
-    # root.geometry("1280x720")
     gui(root)
     root.mainloop()
