@@ -1,21 +1,15 @@
-# A Simple German corpus
-Repository for the lab module MA-INF 4306 of the university of Bonn.
+# A New Aligned Simple German Corpus
+This repository contains the data and code for a Simple German Corpus. This work originated from the lab module MA-INF 4306 of the university of Bonn.
 
 ## About
 The German language knows two versions of plain language: Einfache Sprache (Simple German) and [Leichte Sprache](https://leichte-sprache.de/), the latter being controlled by the _Netzwerk Leichte Sprache_.
 
-Currently, there are only few works that build a parallel corpus between Simple German and standard German. The goal of this lab is to build such a corpus by
+Currently, there are only few works that build a parallel corpus between Simple German and German and the corresponding data is often not available. Such a (potentially expanded) corpus may be used to implement automatic machine learning translation from German to Simple German. While the data might currently not be sufficient, the goal of this work is to lay the foundations for such a corpus by:
 
-1. Scraping websites with parallel versions for Simple German and standard German
+1. Scraping websites with parallel versions for German and Simple German
 2. Implementing various algorithms presented in the literature to form a corpus that contains aligned, "translated" sentences.
 
-In later work, such a (potentially expanded) corpus may be used to implement automatic machine learning translation from standard German to Simple German. However, as it stands now, the amount of data is not sufficient for such a task.
-
-
-## Resources
-Papers that we use as inspiration for our work can be found in the resources wiki.
-
-## Using this repository
+## Usage
 Before using the repo, you **must** create the file `defaultvalues.py`.
 Within it, you need to define the variable `repository_location`, the absolute path to the folder of this repository. E.g. `dataset=/home/bob/Simple-German-Corpus`.
 You can also change any of the other variables.
